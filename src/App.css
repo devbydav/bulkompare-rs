@@ -1,0 +1,10 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+}
+
+
+.Stork-logo {
+  height: 80vmin;
+  pointer-events: none;
+}

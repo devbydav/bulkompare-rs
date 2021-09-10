@@ -7,7 +7,7 @@ import SuperSelect from "./SuperSelect";
 import Steps from "./Steps";
 
 
-const NavBar = ({selection, setSelection, selectedExt, setSelectedIndex, handleCompare}) => {
+const NavBar = ({selection, setSelection, selectedExt, setSelectedIndex, handleCompare, showToast}) => {
     const history = useHistory();
 
     const handleSaveSelection = () => {
@@ -17,8 +17,8 @@ const NavBar = ({selection, setSelection, selectedExt, setSelectedIndex, handleC
                 selection: selection
             }
         )
-            .then(() => console.log("Sélection enregistrée"))
-            .catch(e => console.log(e))
+            .then(() => showToast("Sélection enregistrée"))
+            .catch(e => showToast(e, false))
     };
 
     const handleOpenSelection = () => {
@@ -29,9 +29,9 @@ const NavBar = ({selection, setSelection, selectedExt, setSelectedIndex, handleC
         )
             .then((newSelection) => {
                 setSelection(newSelection);
-                console.log("Nouvelle sélection importée")
+                showToast("Nouvelle sélection importée")
             })
-            .catch(e => console.log("Echec de la lecture de sélection", e))
+            .catch(e => showToast(e, false))
     };
 
     return (

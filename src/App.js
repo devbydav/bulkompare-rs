@@ -23,7 +23,7 @@ function App() {
     const [selection, setSelection] = useState(defaultSelection);
     const [comparisonResult, setComparisonResult] = useState(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const [snackbarConfig, setSnackbarConfig] = useState({msg: "", isSuccess: false});
+    const [snackbarConfig, setSnackbarConfig] = useState(null);
 
     const selectedExt = selection.comparators[selectedIndex]?.ext ?? "";
 
@@ -34,9 +34,17 @@ function App() {
             .then((newSelection) => {
                 setSelection(newSelection)
             })
-            .catch(e => setSnackbarConfig({msg: "Echec ouverture de la sélection par défaut" + e, isSuccess: false}));
+            .catch(e => showToast("Echec ouverture de la sélection par défaut: " + e, false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    const showToast = (msg, isSuccess = true) => {
+        setSnackbarConfig({
+            msg: msg,
+            severity: isSuccess ? "success" : "error",
+            duration: isSuccess ? 2000 : 10000
+        })
+    }
 
     const handleSnackbarClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -51,11 +59,11 @@ function App() {
             .then((c) => {
                 history.push("/resultDisplay");
                 setComparisonResult(c);
-                setSnackbarConfig({msg: "Comparaison terminée", isSuccess: true});
+                showToast("Comparaison terminée");
                 setComparing(false);
             })
             .catch(e => {
-                setSnackbarConfig({msg: e, isSuccess: false});
+                showToast(e, false);
                 setComparing(false);
             })
     };
@@ -71,6 +79,7 @@ function App() {
                     selectedExt={selectedExt}
                     setSelectedIndex={setSelectedIndex}
                     handleCompare={handleCompare}
+                    showToast={showToast}
                 />
                 {comparing ?
                     <div>
@@ -91,6 +100,7 @@ function App() {
                                 setSelection={setSelection}
                                 fileProperties={selection.comparators[selectedIndex]?.csv_sets}
                                 selectedExt={selectedExt}
+                                showToast={showToast}
                             />
                         </Route>
                         <Route path="/columnSelection">
@@ -112,19 +122,24 @@ function App() {
                         </Route>
                     </Switch>
                 }
-                <Snackbar
-                    open={!!snackbarConfig.msg}
-                    autoHideDuration={6000}
-                    onClose={handleSnackbarClose}
-                >
-                    <Alert
+                {snackbarConfig ?
+                    <Snackbar
+                        open={!!snackbarConfig.msg}
+                        autoHideDuration={snackbarConfig.duration}
                         onClose={handleSnackbarClose}
-                        severity={snackbarConfig.isSuccess ? "success" : "error"}
-                        sx={{width: '100%'}}
                     >
-                        {snackbarConfig.msg}
-                    </Alert>
-                </Snackbar>
+                        <Alert
+                            onClose={handleSnackbarClose}
+                            severity={snackbarConfig.severity}
+                            sx={{width: '100%'}}
+                        >
+                            {snackbarConfig.msg}
+                        </Alert>
+                    </Snackbar>
+                    :
+                    null
+                }
+
             </Stack>
 
         </div>

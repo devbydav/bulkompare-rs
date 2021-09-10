@@ -8,7 +8,7 @@ import {Status} from "../../constants/constants";
 import {defaultCsvSet} from "../../constants/defaults";
 
 
-function FileProperties({fileProperties, selectedExt, selection, setSelection}) {
+function FileProperties({fileProperties, selectedExt, selection, setSelection, showToast}) {
     const history = useHistory();
     const [csvSetA, setCsvSetA] = useState(defaultCsvSet)
     const [csvSetB, setCsvSetB] = useState(defaultCsvSet)
@@ -44,12 +44,12 @@ function FileProperties({fileProperties, selectedExt, selection, setSelection}) 
                     const newSelection = {...prevState};
                     const index = newSelection.comparators.findIndex(c => c.ext === selectedExt);
                     newSelection.comparators[index] = c;
-                    console.log("Read header success", c);
+                    showToast("Lecture des colonnes disponibles terminée")
 
                     setSelection(newSelection);
 
                 })
-                .catch(e => console.log("Read header error", e))
+                .catch(e => showToast(e, false))
 
 
             newComparator.status = Status.initial;

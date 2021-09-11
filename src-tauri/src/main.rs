@@ -3,6 +3,9 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
+#[macro_use]
+extern crate lazy_static;
+
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -13,12 +16,31 @@ use anyhow::Context;
 use comparator::ComparatorResult;
 use selection::Selection;
 use comparator::Comparator;
-
+use config::Config;
 
 mod selection;
 mod comparator;
 mod helpers;
 mod csv_set;
+mod config;
+
+
+lazy_static! {
+    static ref CONFIG_DIR: PathBuf = {
+        // current dir in debug, exe dir in release
+        if cfg!(debug_assertions) {
+            let current_dir = std::env::current_dir().unwrap();
+            current_dir.join("config")
+        } else {
+            let current_exe = std::env::current_exe().unwrap();
+            current_exe.parent().unwrap().join("config")
+        }
+    };
+
+    static ref CONFIG: Config = {
+        Config::imported(&CONFIG_DIR)
+    };
+}
 
 
 #[derive(Serialize)]

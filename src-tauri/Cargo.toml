@@ -28,4 +28,4 @@ lazy_static = "1.4.0"
 [features]
 default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
-
+custom_actions = []

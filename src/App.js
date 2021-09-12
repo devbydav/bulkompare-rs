@@ -112,7 +112,7 @@ function App() {
                         </Route>
                         <Route path="/resultDisplay">
                             {comparisonResult ?
-                                <ResultDisplay comparisonResult={comparisonResult}/>
+                                <ResultDisplay comparisonResult={comparisonResult} showToast={showToast}/>
                                 :
                                 null}
                         </Route>

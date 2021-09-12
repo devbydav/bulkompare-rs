@@ -1,13 +1,30 @@
 import React from "react";
-
+import {invoke} from '@tauri-apps/api/tauri';
 import {TreeItem, TreeView} from "@mui/lab";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import {Button} from "@mui/material";
 
 
-function ResultDisplay({comparisonResult}) {
+function ResultDisplay({comparisonResult, showToast}) {
 
     console.log("-> Rendering ResultDisplay");
+
+    const handleLeafAction = (ext, index) => {
+
+        const displayColsNames = comparisonResult[ext].display_cols;
+        const displayColsValues = comparisonResult[ext].differences.find(line => line.index === index).display_values;
+
+        const args = {
+            colNames: displayColsNames,
+            colValues: displayColsValues,
+            fileExtension: ext
+        };
+
+        invoke("on_click_result_leaf", args)
+            .then(() => {})
+            .catch(e => showToast(e, false))
+    }
 
     return (
 
@@ -33,7 +50,12 @@ function ResultDisplay({comparisonResult}) {
                                             <TreeItem
                                                 nodeId={leafId}
                                                 key={leafId}
-                                                label={difference.col + ": '" + difference.left + "' - > '" + difference.right + "'"}
+                                                label={<>
+                                                    {difference.col + ": '" + difference.left + "' - > '" + difference.right + "'"}
+                                                    <Button onClick={() => handleLeafAction(ext, differentLine.index)}>
+                                                        GO
+                                                    </Button>
+                                                </>}
                                             />
                                         )
                                     })}

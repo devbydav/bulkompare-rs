@@ -5,20 +5,31 @@ use serde_json;
 use serde::{Deserialize, Serialize};
 use anyhow::Result;
 
+#[cfg(feature = "custom_actions")]
+use crate::custom_actions::CustomConfig;
+
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
-    pub item: u8,
+    #[cfg(feature = "custom_actions")]
+    pub custom: Option<CustomConfig>
 }
 
 
 impl Config {
 
     pub fn imported(config_dir: &PathBuf) -> Self {
-        read_config(config_dir).unwrap_or_else(|e| {
+        let mut config = read_config(config_dir).unwrap_or_else(|e| {
             println!("Error reading config file, default values are used ({})", e);
             Config::default()
-        })
+        });
+
+        #[cfg(feature = "custom_actions")]
+        if let Some(ref mut custom) = config.custom {
+            custom.finish().unwrap();
+        }
+
+        config
     }
 
 }

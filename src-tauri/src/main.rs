@@ -18,11 +18,18 @@ use selection::Selection;
 use comparator::Comparator;
 use config::Config;
 
+#[cfg(feature = "custom_actions")]
+use custom_actions::custom_on_click_result_leaf;
+
+
 mod selection;
 mod comparator;
 mod helpers;
 mod csv_set;
 mod config;
+
+#[cfg(feature = "custom_actions")]
+mod custom_actions;
 
 
 lazy_static! {
@@ -61,6 +68,7 @@ fn main() {
             compare,
             open_selection,
             save_selection,
+            on_click_result_leaf,
       ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -115,5 +123,26 @@ fn save_selection(path: PathBuf, selection: Selection) -> Result<(), StringError
     let j = serde_json::to_string_pretty(&selection)
         .context("serialization")?;
     fs::write(path, j).context("writing selection")?;
+    Ok(())
+}
+
+
+#[tauri::command]
+fn on_click_result_leaf(
+    col_names: Vec<String>,
+    col_values: Vec<String>,
+    file_extension: String,
+) -> Result<(), StringError> {
+    println!("-> click_result_leaf");
+
+
+    #[cfg(feature = "custom_actions")]
+    custom_on_click_result_leaf(col_names, col_values, file_extension)?;
+
+    #[cfg(not(feature = "custom_actions"))]
+    {
+        println!("{}\n{:?}\n{:?}", file_extension, col_names, col_values);
+    }
+
     Ok(())
 }

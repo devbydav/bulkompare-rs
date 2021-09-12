@@ -132,17 +132,20 @@ fn on_click_result_leaf(
     col_names: Vec<String>,
     col_values: Vec<String>,
     file_extension: String,
-) -> Result<(), StringError> {
+) -> Result<String, StringError> {
     println!("-> click_result_leaf");
 
 
     #[cfg(feature = "custom_actions")]
-    custom_on_click_result_leaf(col_names, col_values, file_extension)?;
+    {
+        custom_on_click_result_leaf(col_names, col_values, file_extension)
+            .map_err(|e| e.into())
+    }
 
     #[cfg(not(feature = "custom_actions"))]
     {
         println!("{}\n{:?}\n{:?}", file_extension, col_names, col_values);
+        Ok("".to_string())
     }
 
-    Ok(())
 }

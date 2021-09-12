@@ -22,7 +22,12 @@ function ResultDisplay({comparisonResult, showToast}) {
         };
 
         invoke("on_click_result_leaf", args)
-            .then(() => {})
+            .then(info => {
+                // display toast only if a non-empty string was returned
+                if (info) {
+                    showToast(info)
+                }
+            })
             .catch(e => showToast(e, false))
     }
 

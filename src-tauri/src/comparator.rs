@@ -36,7 +36,8 @@ pub struct ComparatorResult {
 #[derive(Serialize, Deserialize)]
 pub struct Comparator {
     pub ext: String,
-    pub status: Status,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<Status>,
     pub available_cols: Vec<String>,
     pub index_cols: Vec<String>,
     pub compare_cols: Vec<String>,

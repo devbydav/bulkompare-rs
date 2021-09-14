@@ -17,6 +17,7 @@ use comparator::ComparatorResult;
 use selection::Selection;
 use comparator::Comparator;
 use config::Config;
+use helpers::Status;
 
 #[cfg(feature = "custom_actions")]
 use custom_actions::custom_on_click_result_leaf;
@@ -111,14 +112,25 @@ fn open_selection(path: PathBuf) -> Result<Selection, StringError> {
     println!("-> open_selection command");
 
     let s = fs::read_to_string(path).context("Reading selection")?;
-    let selection: Selection = serde_json::from_str(&s).context("Parsing selection")?;
+    let mut selection: Selection = serde_json::from_str(&s).context("Parsing selection")?;
+
+    // Force status to Initial
+    for comparator in &mut selection.comparators {
+        comparator.status = Some(Status::Initial);
+    }
+
     Ok(selection)
 }
 
 
 #[tauri::command]
-fn save_selection(path: PathBuf, selection: Selection) -> Result<(), StringError> {
+fn save_selection(path: PathBuf, mut selection: Selection) -> Result<(), StringError> {
     println!("-> save_selection command");
+
+     // Force status to None to skip serializing
+    for comparator in &mut selection.comparators {
+        comparator.status = None;
+    }
 
     let j = serde_json::to_string_pretty(&selection)
         .context("serialization")?;

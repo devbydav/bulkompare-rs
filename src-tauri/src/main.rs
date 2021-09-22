@@ -65,7 +65,8 @@ impl From<anyhow::Error> for StringError {
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            read_headers,
+            update_selection_status,
+            update_comparator_status,
             compare,
             open_selection,
             save_selection,
@@ -77,15 +78,29 @@ fn main() {
 
 
 #[tauri::command]
-fn read_headers(
-    mut comparator: Comparator,
-    directories: Vec<PathBuf>
-) -> Result<Comparator, StringError> {
-    println!("-> read_headers command");
+fn update_selection_status(
+    mut selection: Selection,
+    min_status: Status
+) -> Result<Selection, StringError> {
+    println!("-> update_selection_status command with min {:?}", &min_status);
 
-    let directories_refs = directories.iter().map(|pb| pb.as_ref()).collect();
-    comparator.read_headers(directories_refs)?;
-    println!("{}", comparator.ext);
+    for comparator in &mut selection.comparators {
+        comparator.update_status(min_status, &selection.dirs)?;
+    }
+
+    Ok(selection)
+}
+
+
+#[tauri::command]
+fn update_comparator_status(
+    mut comparator: Comparator,
+    directories: Vec<PathBuf>,
+    min_status: Status
+) -> Result<Comparator, StringError> {
+    println!("-> update_comparator_status command with min {:?}", &min_status);
+
+    comparator.update_status(min_status, &directories)?;
 
     Ok(comparator)
 }
@@ -98,8 +113,7 @@ async fn compare(selection: Selection) -> Result<HashMap<String, ComparatorResul
     let mut diffs = HashMap::new();
 
     for mut comparator in selection.comparators {
-        let directories_refs = selection.dirs.iter().map(|pb| pb.as_ref()).collect();
-        let res = comparator.compare(directories_refs)?;
+        let res = comparator.compare(&selection.dirs)?;
         diffs.insert(comparator.ext.clone(), res);
     }
 
@@ -116,7 +130,7 @@ fn open_selection(path: PathBuf) -> Result<Selection, StringError> {
 
     // Force status to Initial
     for comparator in &mut selection.comparators {
-        comparator.status = Some(Status::Initial);
+        comparator.status = Status::Initial;
     }
 
     Ok(selection)
@@ -129,7 +143,8 @@ fn save_selection(path: PathBuf, mut selection: Selection) -> Result<(), StringE
 
      // Force status to None to skip serializing
     for comparator in &mut selection.comparators {
-        comparator.status = None;
+        comparator.status = Status::SkipSerialize;
+        comparator.available_cols = vec![];
     }
 
     let j = serde_json::to_string_pretty(&selection)

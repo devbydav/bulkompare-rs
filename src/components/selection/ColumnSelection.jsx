@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from "react";
 import {useHistory} from 'react-router-dom';
 import {Button, Divider, Grid, Stack} from "@mui/material";
+import {Status} from "../../constants/constants";
 
 
-function ColumnSelection({comparator, selectedExt, setSelection}) {
+function ColumnSelection({comparator, selectedExt, setSelection, showToast}) {
 
     const history = useHistory();
     const [csvCols, setCsvCols] = useState([])
@@ -48,6 +49,23 @@ function ColumnSelection({comparator, selectedExt, setSelection}) {
             return filtered;
         }, []);
 
+        let ready = true;
+
+        if (indexCols.length === 0) {
+            showToast("Aucune colonne index sélectionnée", false);
+            ready = false;
+        }
+
+        if (compareCols.length === 0) {
+            showToast("Aucune colonne à comparer sélectionnée", false);
+            ready = false;
+        }
+
+        if (displayCols.length === 0) {
+            showToast("Aucune colonne à afficher sélectionnée", false);
+            ready = false;
+        }
+
         setSelection(prevState => {
             const newConfig = {...prevState};
             const index = newConfig.comparators.findIndex(c => c.ext === selectedExt);
@@ -55,6 +73,7 @@ function ColumnSelection({comparator, selectedExt, setSelection}) {
             newComparator.index_cols = indexCols;
             newComparator.compare_cols = compareCols;
             newComparator.display_cols = displayCols;
+            newComparator.status = ready ? Status.Ready : Status.ColsAvailable;
             newConfig.comparators[index] = newComparator;
             return newConfig;
         })

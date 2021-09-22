@@ -92,6 +92,7 @@ function App() {
                             <SourceSelection
                                 selection={selection}
                                 setSelection={setSelection}
+                                showToast={showToast}
                             />
                         </Route>
                         <Route path="/fileProperties">
@@ -108,6 +109,7 @@ function App() {
                                 setSelection={setSelection}
                                 comparator={selection.comparators[selectedIndex]}
                                 selectedExt={selectedExt}
+                                showToast={showToast}
                             />
                         </Route>
                         <Route path="/resultDisplay">

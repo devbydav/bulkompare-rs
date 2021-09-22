@@ -1,11 +1,11 @@
 use std::cmp::Ordering;
-use std::path::Path;
+use std::path::PathBuf;
 
 use serde::{Serialize, Deserialize};
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 
 use crate::csv_set::CsvSet;
-use crate::helpers::{Comparison, Line, Columns, Status};
+use crate::helpers::{Comparison, Line, Columns, Status, Files};
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,8 +36,9 @@ pub struct ComparatorResult {
 #[derive(Serialize, Deserialize)]
 pub struct Comparator {
     pub ext: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<Status>,
+    #[serde(default = "default_status_deserialization")]
+    #[serde(skip_serializing_if = "skip_status_serialization")]
+    pub status: Status,
     pub available_cols: Vec<String>,
     pub index_cols: Vec<String>,
     pub compare_cols: Vec<String>,
@@ -49,16 +50,62 @@ pub struct Comparator {
     pub lines_right: Vec<Line>,
 }
 
+fn default_status_deserialization() -> Status {
+    Status::Initial
+}
+
+fn skip_status_serialization(status: &Status) -> bool {
+    *status == Status::SkipSerialize
+}
+
 
 impl Comparator {
-    pub fn read_headers(&mut self, directories: Vec<&Path>) -> Result<()> {
+
+    /// Makes sure each directory has at least 1 file with desired extension
+    pub fn update_status(&mut self, min_status: Status, directories: &Vec<PathBuf>) -> Result<()> {
+
+        if self.status < Status::FilesAvailable {
+            println!("Try update {} to FilesAvailable", self.ext);
+            match self.files_available(directories) {
+                Err(e) if min_status >= Status::FilesAvailable => bail!(e),
+                Err(_) => return Ok(()),
+                Ok(()) => self.status = Status::FilesAvailable
+            }
+        }
+
+        if self.status < Status::ColsAvailable {
+            println!("Try update {} to ColsAvailable", self.ext);
+            match self.read_headers(directories) {
+                Err(e) if min_status >= Status::ColsAvailable => bail!(e),
+                Err(_) => return Ok(()),
+                Ok(()) => self.status = Status::ColsAvailable
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Makes sure each directory has at least 1 file with desired extension
+    pub fn files_available(&mut self, directories: &Vec<PathBuf>) -> Result<()> {
+
+        for i in 0..=1 {
+            let mut files = Files::new(&directories[i], &self.ext)?;
+            files.next().with_context(|| format!("Aucun fichier {} dans {}",
+                                                 self.ext,
+                                                 directories[i].display()))?;
+        }
+
+        Ok(())
+    }
+
+    pub fn read_headers(&mut self, directories: &Vec<PathBuf>) -> Result<()> {
         println!("Comparator reading headers ...");
 
         let headers: Result<Vec<Vec<String>>> = self.csv_sets
             .iter()
             .zip(directories)
             .map(|(csv_set, directory)| {
-                csv_set.get_headers(&directory, &self.ext)
+                csv_set.get_headers(directory, &self.ext)
             })
             .collect();
 
@@ -73,12 +120,13 @@ impl Comparator {
             .collect();
 
         // println!("Available headers : {:?}", self.available_cols);
+        ensure!(self.available_cols.len() > 0, "Aucune colonne commune aux fichiers");
 
         Ok(())
     }
 
 
-    pub fn compare(&mut self, directories: Vec<&Path>) -> Result<ComparatorResult> {
+    pub fn compare(&mut self, directories: &Vec<PathBuf>) -> Result<ComparatorResult> {
         println!("Comparator comparing ...");
         let mut differences = Vec::new();
 
@@ -88,8 +136,8 @@ impl Comparator {
             display: &self.display_cols
         };
 
-        self.lines_left = self.csv_sets[0].get_lines(&columns, directories[0], &self.ext)?;
-        self.lines_right = self.csv_sets[1].get_lines(&columns, directories[1], &self.ext)?;
+        self.lines_left = self.csv_sets[0].get_lines(&columns, &directories[0], &self.ext)?;
+        self.lines_right = self.csv_sets[1].get_lines(&columns, &directories[1], &self.ext)?;
 
 
         let mut iter_left = self.lines_left.iter_mut()

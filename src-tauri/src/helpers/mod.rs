@@ -12,10 +12,12 @@ pub use file_iterator::Files;
 mod file_iterator;
 
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, PartialOrd, Serialize, Deserialize, Copy, Clone)]
 pub enum Status {
+    SkipSerialize,
     Initial,
-    ColsAvailable ,
+    FilesAvailable,
+    ColsAvailable,
     Ready
 }
 

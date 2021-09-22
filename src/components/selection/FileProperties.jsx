@@ -29,35 +29,31 @@ function FileProperties({fileProperties, selectedExt, selection, setSelection, s
 
     const handleSave = () => {
         console.log("Saving");
-        console.log(csvSets);
 
-        setSelection(prevState => {
-            const newSelection = {...prevState};
-            const index = newSelection.comparators.findIndex(c => c.ext === selectedExt);
-            const newComparator = {...newSelection.comparators[index]};
+        const newSelection = {...selection};
+        const index = newSelection.comparators.findIndex(c => c.ext === selectedExt);
+        const newComparator = {...newSelection.comparators[index]};
 
-            invoke('read_headers', {
-                comparator: newComparator,
-                directories: selection.dirs
-            })
-                .then((c) => {
-                    const newSelection = {...prevState};
-                    const index = newSelection.comparators.findIndex(c => c.ext === selectedExt);
-                    newSelection.comparators[index] = c;
-                    showToast("Lecture des colonnes disponibles terminée")
+        // Status can't be above FilesAvailable at this time
+        if (newComparator.status !== Status.Initial) {
+            newComparator.status = Status.FilesAvailable;
+        }
+        newComparator.csv_sets = csvSets;
 
-                    setSelection(newSelection);
-
-                })
-                .catch(e => showToast(e, false))
-
-
-            newComparator.status = Status.initial;
-            newComparator.csv_sets = csvSets;
-            newSelection.comparators[index] = newComparator;
-            console.log(newSelection);
-            return newSelection;
+        invoke('update_comparator_status', {
+            comparator: selection.comparators[index],
+            directories: selection.dirs,
+            minStatus: Status.ColsAvailable,
         })
+            .then(comparator => {
+                newSelection.comparators[index] = comparator;
+                showToast("Lecture des colonnes disponibles terminée");
+                setSelection(newSelection);
+            })
+            .catch(e => {
+                newSelection.comparators[index] = newComparator;
+                showToast(e, false);
+            })
 
         history.push("/");
     }

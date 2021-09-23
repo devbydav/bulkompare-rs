@@ -6,19 +6,21 @@ use encoding_rs_io::{DecodeReaderBytesBuilder, DecodeReaderBytes};
 use encoding_rs::WINDOWS_1252;
 use csv::{StringRecord, Reader};
 use serde::{Serialize, Deserialize};
+use serde_repr::{Serialize_repr, Deserialize_repr};
 
 pub use file_iterator::Files;
 
 mod file_iterator;
 
 
-#[derive(Debug, PartialEq, PartialOrd, Serialize, Deserialize, Copy, Clone)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, PartialOrd, Copy, Clone)]
+#[repr(i8)]
 pub enum Status {
-    SkipSerialize,
-    Initial,
-    FilesAvailable,
-    ColsAvailable,
-    Ready
+    SkipSerialize = -1,
+    Initial = 0,
+    FilesAvailable = 1,
+    ColsAvailable = 2,
+    Ready = 3
 }
 
 

@@ -1,6 +1,6 @@
 export const Status = Object.freeze({
-    Initial: "Initial",
-    ColsAvailable: "ColsAvailable",
-    FilesAvailable: "FilesAvailable",
-    Ready: "Ready",
+    Initial: 0,
+    FilesAvailable: 1,
+    ColsAvailable: 2,
+    Ready: 3,
 });

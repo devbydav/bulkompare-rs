@@ -1,12 +1,10 @@
 import React, {useState, useEffect} from "react";
-import {useHistory} from 'react-router-dom';
+
 import {Button, Divider, Grid, Stack} from "@mui/material";
-import {Status} from "../../constants/constants";
 
 
-function ColumnSelection({comparator, selectedExt, setSelection, showToast}) {
+function ColumnSelection({comparator, selectedExt, handleSave}) {
 
-    const history = useHistory();
     const [csvCols, setCsvCols] = useState([])
 
     console.log("-> Rendering ColumnsSelection");
@@ -26,63 +24,6 @@ function ColumnSelection({comparator, selectedExt, setSelection, showToast}) {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedExt])
-
-    const handleSave = () => {
-        const indexCols = csvCols.reduce((filtered, csvCol) => {
-            if (csvCol.index) {
-                filtered.push(csvCol.name);
-            }
-            return filtered;
-        }, []);
-
-        const compareCols = csvCols.reduce((filtered, csvCol) => {
-            if (csvCol.compare) {
-                filtered.push(csvCol.name);
-            }
-            return filtered;
-        }, []);
-
-        const displayCols = csvCols.reduce((filtered, csvCol) => {
-            if (csvCol.display) {
-                filtered.push(csvCol.name);
-            }
-            return filtered;
-        }, []);
-
-        let ready = true;
-
-        if (indexCols.length === 0) {
-            showToast("Aucune colonne index sélectionnée", false);
-            ready = false;
-        }
-
-        if (compareCols.length === 0) {
-            showToast("Aucune colonne à comparer sélectionnée", false);
-            ready = false;
-        }
-
-        if (displayCols.length === 0) {
-            showToast("Aucune colonne à afficher sélectionnée", false);
-            ready = false;
-        }
-
-        setSelection(prevState => {
-            const newConfig = {...prevState};
-            const index = newConfig.comparators.findIndex(c => c.ext === selectedExt);
-            const newComparator = {...newConfig.comparators[index]};
-            newComparator.index_cols = indexCols;
-            newComparator.compare_cols = compareCols;
-            newComparator.display_cols = displayCols;
-            newComparator.status = ready ? Status.Ready : Status.ColsAvailable;
-            newConfig.comparators[index] = newComparator;
-            return newConfig;
-        })
-
-        console.log("Saving");
-        history.push("/");
-
-    }
-
 
     const handleToggleSelection = (colName, selectionType) => {
         setCsvCols(prevState => {
@@ -105,7 +46,7 @@ function ColumnSelection({comparator, selectedExt, setSelection, showToast}) {
 
     return (
         <Stack direction="column" spacing={2}>
-            <Button onClick={handleSave}>Valider</Button>
+            <Button onClick={() => handleSave(csvCols)}>Valider</Button>
             <Grid container spacing={2}>
 
                 {csvCols.map((csvCol, i) => (

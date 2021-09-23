@@ -12,8 +12,10 @@ import SourceSelection from "./components/selection/SourceSelection";
 import FileProperties from "./components/selection/FileProperties";
 import ColumnSelection from "./components/selection/ColumnSelection";
 import ResultDisplay from "./components/ResultDisplay";
-import {defaultSelection} from "./constants/defaults"
 import {Alert} from "@mui/lab";
+
+import {defaultComparator, defaultSelection} from "./constants/defaults"
+import {Status} from "./constants/constants";
 
 
 function App() {
@@ -25,7 +27,8 @@ function App() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [snackbarConfig, setSnackbarConfig] = useState(null);
 
-    const selectedExt = selection.comparators[selectedIndex]?.ext ?? "";
+    const selectedComparator = selection.comparators[selectedIndex];
+    const selectedExt = selectedComparator?.ext ?? "";
 
     useEffect(() => {
         invoke('open_selection', {
@@ -52,6 +55,126 @@ function App() {
         }
         setSnackbarConfig({msg: "", isSuccess: false});
     };
+
+    const handleSourceSelectionSave = (extensions, names, dirs) => {
+        console.log("Saving source selection")
+
+        // Keep old comparators for extensions that were present before
+        const newComparators = extensions.map(ext => (
+            selection.comparators.find(c => c.ext === ext) || {...defaultComparator, ext: ext}
+        ));
+
+        // Status is back to Initial
+        newComparators.forEach(comparator => {comparator.status = Status.Initial});
+
+        const newSelection = {
+            ...selection,
+            names: names,
+            dirs: dirs,
+            comparators: newComparators
+        };
+
+        invoke('update_selection_status', {
+            selection: newSelection,
+            minStatus: Status.FilesAvailable,
+        })
+            .then(updatedSelection => setSelection(updatedSelection))
+            .catch(e => {
+                showToast(e, false);
+                setSelection(newSelection);
+            })
+
+        history.push("/");
+    }
+
+    const handleFilePropertiesSave = (newCsvSets) => {
+        console.log("Saving file properties");
+
+        const newSelection = {...selection};
+        const newComparator = {
+            ...selectedComparator,
+            csv_sets: newCsvSets,
+        };
+
+        // Status can't be above FilesAvailable at this time
+        if (newComparator.status !== Status.Initial) {
+            newComparator.status = Status.FilesAvailable;
+        }
+
+        invoke('update_comparator_status', {
+            comparator: newComparator,
+            directories: selection.dirs,
+            minStatus: Status.ColsAvailable,
+        })
+            .then(updatedComparator => {
+                newSelection.comparators[selectedIndex] = updatedComparator;
+                showToast("Lecture des colonnes disponibles terminée");
+                setSelection(newSelection);
+            })
+            .catch(e => {
+                newSelection.comparators[selectedIndex] = newComparator;
+                showToast(e, false);
+                setSelection(newSelection);
+            })
+
+        history.push("/");
+    }
+
+     const handleColumnsSelectionSave = (csvCols) => {
+        console.log("Saving column selection");
+
+        const indexCols = csvCols.reduce((filtered, csvCol) => {
+            if (csvCol.index) {
+                filtered.push(csvCol.name);
+            }
+            return filtered;
+        }, []);
+
+        const compareCols = csvCols.reduce((filtered, csvCol) => {
+            if (csvCol.compare) {
+                filtered.push(csvCol.name);
+            }
+            return filtered;
+        }, []);
+
+        const displayCols = csvCols.reduce((filtered, csvCol) => {
+            if (csvCol.display) {
+                filtered.push(csvCol.name);
+            }
+            return filtered;
+        }, []);
+
+        let ready = true;
+
+        if (indexCols.length === 0) {
+            showToast("Aucune colonne index sélectionnée", false);
+            ready = false;
+        }
+
+        if (compareCols.length === 0) {
+            showToast("Aucune colonne à comparer sélectionnée", false);
+            ready = false;
+        }
+
+        if (displayCols.length === 0) {
+            showToast("Aucune colonne à afficher sélectionnée", false);
+            ready = false;
+        }
+
+        const newSelection = {...defaultSelection};
+        newSelection.comparators[selectedIndex] = {
+            ...selectedComparator,
+            index_cols: indexCols,
+            compare_cols: compareCols,
+            display_cols: displayCols,
+            status: ready ? Status.Ready : Status.ColsAvailable
+        }
+
+        setSelection(newSelection);
+
+        history.push("/");
+
+    }
 
     const handleCompare = () => {
         setComparing(true);
@@ -91,25 +214,21 @@ function App() {
                         <Route path="/source">
                             <SourceSelection
                                 selection={selection}
-                                setSelection={setSelection}
-                                showToast={showToast}
+                                handleSave={handleSourceSelectionSave}
                             />
                         </Route>
                         <Route path="/fileProperties">
                             <FileProperties
-                                selection={selection}
-                                setSelection={setSelection}
-                                fileProperties={selection.comparators[selectedIndex]?.csv_sets}
+                                fileProperties={selectedComparator?.csv_sets}
                                 selectedExt={selectedExt}
-                                showToast={showToast}
+                                handleSave={handleFilePropertiesSave}
                             />
                         </Route>
                         <Route path="/columnSelection">
                             <ColumnSelection
-                                setSelection={setSelection}
-                                comparator={selection.comparators[selectedIndex]}
+                                comparator={selectedComparator}
                                 selectedExt={selectedExt}
-                                showToast={showToast}
+                                handleSave={handleColumnsSelectionSave}
                             />
                         </Route>
                         <Route path="/resultDisplay">

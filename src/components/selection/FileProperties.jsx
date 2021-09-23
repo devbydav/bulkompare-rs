@@ -1,15 +1,11 @@
 import React, {useState, useEffect} from "react";
-import {invoke} from '@tauri-apps/api/tauri';
-import {useHistory} from 'react-router-dom';
 
 import {Button, Stack, TextField, Switch, FormControlLabel} from '@mui/material';
 
-import {Status} from "../../constants/constants";
 import {defaultCsvSet} from "../../constants/defaults";
 
 
-function FileProperties({fileProperties, selectedExt, selection, setSelection, showToast}) {
-    const history = useHistory();
+function FileProperties({fileProperties, selectedExt, handleSave}) {
     const [csvSetA, setCsvSetA] = useState(defaultCsvSet)
     const [csvSetB, setCsvSetB] = useState(defaultCsvSet)
     const csvSets = [csvSetA, csvSetB];
@@ -25,38 +21,6 @@ function FileProperties({fileProperties, selectedExt, selection, setSelection, s
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedExt])
-
-
-    const handleSave = () => {
-        console.log("Saving");
-
-        const newSelection = {...selection};
-        const index = newSelection.comparators.findIndex(c => c.ext === selectedExt);
-        const newComparator = {...newSelection.comparators[index]};
-
-        // Status can't be above FilesAvailable at this time
-        if (newComparator.status !== Status.Initial) {
-            newComparator.status = Status.FilesAvailable;
-        }
-        newComparator.csv_sets = csvSets;
-
-        invoke('update_comparator_status', {
-            comparator: selection.comparators[index],
-            directories: selection.dirs,
-            minStatus: Status.ColsAvailable,
-        })
-            .then(comparator => {
-                newSelection.comparators[index] = comparator;
-                showToast("Lecture des colonnes disponibles terminée");
-                setSelection(newSelection);
-            })
-            .catch(e => {
-                newSelection.comparators[index] = newComparator;
-                showToast(e, false);
-            })
-
-        history.push("/");
-    }
 
     const handleEncodingChange = (i, newVal) => {
         updateState(i, "encoding", newVal);
@@ -93,7 +57,7 @@ function FileProperties({fileProperties, selectedExt, selection, setSelection, s
     }
     return (
         <Stack>
-            <Button onClick={handleSave}>Valider</Button>
+            <Button onClick={() => handleSave(csvSets)}>Valider</Button>
             <Stack direction="row" justifyContent="space-around">
                 {fileProperties.map((fp, i) => (
                     <Stack direction="column" spacing={2} key={i}>

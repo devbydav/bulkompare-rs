@@ -1,6 +1,4 @@
 import React, {useEffect, useState} from "react";
-import {invoke} from '@tauri-apps/api/tauri';
-import {useHistory} from 'react-router-dom';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,12 +14,8 @@ import {
     Container, Divider
 } from '@mui/material';
 
-import {defaultComparator} from "../../constants/defaults";
-import {Status} from "../../constants/constants";
 
-
-function SourceSelection({selection, setSelection, showToast}) {
-    const history = useHistory();
+function SourceSelection({selection, handleSave}) {
     const [addExtension, setAddExtension] = useState("")
     const [names, setNames] = useState(["", ""])
     const [dirs, setDirs] = useState(["", ""])
@@ -79,40 +73,11 @@ function SourceSelection({selection, setSelection, showToast}) {
         setExtensions(prevExtensions => prevExtensions.filter(e => e !== ext));
     }
 
-    const handleSave = () => {
-        console.log("saving ...")
-        const newComparators = extensions.map(ext => (
-            selection.comparators.find(c => c.ext === ext) || {...defaultComparator, ext: ext}
-        ));
-
-        // Status is back to Initial
-        newComparators.forEach(comparator => {comparator.status = Status.Initial});
-
-        const newSelection = {
-            ...selection,
-            names: names,
-            dirs: dirs,
-            comparators: newComparators
-        };
-
-        invoke('update_selection_status', {
-            selection: newSelection,
-            minStatus: Status.FilesAvailable,
-        })
-            .then(updatedSelection => setSelection(updatedSelection))
-            .catch(e => {
-                setSelection(newSelection);
-                showToast(e, false);
-            })
-
-        history.push("/");
-    }
-
 
     return (
 
         <Stack direction="column" spacing={2} alignItems="center">
-            <Button onClick={handleSave}>Valider</Button>
+            <Button onClick={() => handleSave(extensions, names, dirs)}>Valider</Button>
 
 
             <Stack direction="row" spacing={5}>

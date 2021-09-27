@@ -161,7 +161,7 @@ function App() {
             ready = false;
         }
 
-        const newSelection = {...defaultSelection};
+        const newSelection = {...selection};
         newSelection.comparators[selectedIndex] = {
             ...selectedComparator,
             index_cols: indexCols,

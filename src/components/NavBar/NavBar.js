@@ -3,11 +3,10 @@ import {invoke} from '@tauri-apps/api/tauri';
 import {Route, Switch, useHistory} from 'react-router-dom';
 import {Button, Stack} from '@mui/material';
 
-import SuperSelect from "./SuperSelect";
-import Steps from "./Steps";
+import ComparatorConfigControl from "./ComparatorConfigControl";
 
 
-const NavBar = ({selection, setSelection, selectedExt, setSelectedIndex, handleCompare, showToast}) => {
+const NavBar = ({selection, setSelection, comparator, selectedExt, setSelectedIndex, handleCompare, showToast}) => {
     const history = useHistory();
 
     const handleSaveSelection = () => {
@@ -45,15 +44,15 @@ const NavBar = ({selection, setSelection, selectedExt, setSelectedIndex, handleC
                 <Route path="/source">
                 </Route>
                 <Route>
-                    <SuperSelect
+                    {comparator &&
+                    <ComparatorConfigControl
                         selection={selection}
                         selectedExt={selectedExt}
-                        setSelectedIndex={setSelectedIndex}/>
+                        setSelectedIndex={setSelectedIndex}
+                        comparator={comparator}
+                        handleCompare={handleCompare}
+                    />}
 
-                    <Steps history={history}/>
-                    <Button variant="outlined" onClick={handleCompare}>
-                        Comparer
-                    </Button>
                     <Button variant="outlined" onClick={handleOpenSelection}>
                         Ouvrir sélection
                     </Button>

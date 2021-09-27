@@ -199,6 +199,7 @@ function App() {
                 <NavBar
                     selection={selection}
                     setSelection={setSelection}
+                    comparator={selectedComparator}
                     selectedExt={selectedExt}
                     setSelectedIndex={setSelectedIndex}
                     handleCompare={handleCompare}

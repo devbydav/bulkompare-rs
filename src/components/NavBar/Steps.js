@@ -1,33 +1,53 @@
 import React from 'react';
-
+import {useHistory} from 'react-router-dom';
 import {Stepper, Step, StepButton} from '@mui/material';
+import CancelIcon from '@mui/icons-material/Cancel';
+import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
+import {Status} from "../../constants/constants";
 
 
-const Steps = ({history}) => {
+const Steps = ({comparator}) => {
+    const history = useHistory();
 
     const steps = [
         {
             title: "Propriétés CSV",
-            isComplete: true,
+            disabled: comparator.status < Status.FilesAvailable,
+            completed: comparator.status > Status.FilesAvailable,
             onClick: () => history.push("/fileProperties"),
         },
         {
             title: "Choix colonnes",
-            isSelected: true,
+            disabled: comparator.status < Status.ColsAvailable,
+            completed: comparator.status > Status.ColsAvailable,
+            isSelected: false,
             onClick: () => history.push("/columnSelection"),
         },
     ];
 
 
     return (
-        <Stepper nonLinear activeStep={0}>
-            {steps.map((step, index) => (
-                <Step key={step.title} completed={true}>
-                    <StepButton color="inherit" onClick={step.onClick}>
-                        {step.title}
-                    </StepButton>
-                </Step>
-            ))}
+        <Stepper nonLinear activeStep={1} sx={{ minWidth: 310 }}>
+            {steps.map(step => {
+                let buttonIcon;
+                if (step.disabled) {
+                    buttonIcon = <CancelIcon color={"disabled"}/>
+                } else if (step.completed) {
+                    buttonIcon = <CheckCircleIcon color={"success"}/>
+                } else {
+                    buttonIcon = <WarningRoundedIcon color={"warning"}/>
+                }
+
+                return (
+                    <Step key={step.title} completed={step.completed} disabled={step.disabled}>
+                        <StepButton icon={buttonIcon} onClick={step.onClick}>
+                            {step.title}
+                        </StepButton>
+                    </Step>
+                )
+            })}
         </Stepper>
     )
 }

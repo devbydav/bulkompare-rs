@@ -62,23 +62,42 @@ fn skip_status_serialization(status: &Status) -> bool {
 impl Comparator {
 
     /// Makes sure each directory has at least 1 file with desired extension
-    pub fn update_status(&mut self, min_status: Status, directories: &Vec<PathBuf>) -> Result<()> {
+    pub fn update_status(
+        &mut self,
+        max_status_before: Status,
+        min_status_after: Status,
+        directories: &Vec<PathBuf>
+    ) -> Result<()> {
+
+        // status is max_status_before at most
+        if self.status > max_status_before {
+            self.status = max_status_before;
+        }
 
         if self.status < Status::FilesAvailable {
-            println!("Try update {} to FilesAvailable", self.ext);
+            println!("Try update {} from {:?} to FilesAvailable", self.ext, self.status);
             match self.files_available(directories) {
-                Err(e) if min_status >= Status::FilesAvailable => bail!(e),
+                Err(e) if min_status_after >= Status::FilesAvailable => bail!(e),
                 Err(_) => return Ok(()),
                 Ok(()) => self.status = Status::FilesAvailable
             }
         }
 
         if self.status < Status::ColsAvailable {
-            println!("Try update {} to ColsAvailable", self.ext);
+            println!("Try update {} from {:?} to ColsAvailable", self.ext, self.status);
             match self.read_headers(directories) {
-                Err(e) if min_status >= Status::ColsAvailable => bail!(e),
+                Err(e) if min_status_after >= Status::ColsAvailable => bail!(e),
                 Err(_) => return Ok(()),
                 Ok(()) => self.status = Status::ColsAvailable
+            }
+        }
+
+        if self.status < Status::Ready {
+            println!("Try update {} from {:?} to Ready", self.ext, self.status);
+            match self.check_selected_columns() {
+                Err(e) if min_status_after >= Status::Ready => bail!(e),
+                Err(_) => return Ok(()),
+                Ok(()) => self.status = Status::Ready
             }
         }
 
@@ -125,6 +144,21 @@ impl Comparator {
         Ok(())
     }
 
+    fn check_selected_columns(&mut self) -> Result<()> {
+        // Check that some columns are selected
+        ensure!(self.index_cols.len() > 0, "Aucune colonne d'index sélectionnée");
+        ensure!(self.compare_cols.len() > 0, "Aucune colonne à comparer sélectionnée");
+        ensure!(self.display_cols.len() > 0, "Aucune colonne à afficher sélectionnée");
+
+
+        // It doesn't make sense to compare columns selected for index
+        ensure!(!self.index_cols
+            .iter()
+            .any(|index_col| self.compare_cols.contains(index_col)),
+        "Certaines colonnes sont sélectionnées en index et comparaison");
+
+        Ok(())
+    }
 
     pub fn compare(&mut self, directories: &Vec<PathBuf>) -> Result<ComparatorResult> {
         println!("Comparator comparing ...");

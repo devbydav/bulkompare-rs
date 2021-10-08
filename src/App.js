@@ -64,8 +64,6 @@ function App() {
             selection.comparators.find(c => c.ext === ext) || {...defaultComparator, ext: ext}
         ));
 
-        // Status is back to Initial
-        newComparators.forEach(comparator => {comparator.status = Status.Initial});
 
         const newSelection = {
             ...selection,
@@ -76,12 +74,14 @@ function App() {
 
         invoke('update_selection_status', {
             selection: newSelection,
-            minStatus: Status.FilesAvailable,
+            maxStatusBefore: Status.Initial,
+            minStatusAfter: Status.FilesAvailable,
         })
-            .then(updatedSelection => setSelection(updatedSelection))
-            .catch(e => {
-                showToast(e, false);
-                setSelection(newSelection);
+            .then(([updatedSelection, err]) => {
+                if (err != null) {
+                    showToast(err, false);
+                }
+                setSelection(updatedSelection)
             })
 
         history.push("/");
@@ -96,25 +96,21 @@ function App() {
             csv_sets: newCsvSets,
         };
 
-        // Status can't be above FilesAvailable at this time
-        if (newComparator.status !== Status.Initial) {
-            newComparator.status = Status.FilesAvailable;
-        }
 
         invoke('update_comparator_status', {
             comparator: newComparator,
             directories: selection.dirs,
-            minStatus: Status.ColsAvailable,
+            maxStatusBefore: Status.FilesAvailable,
+            minStatusAfter: Status.ColsAvailable,
         })
-            .then(updatedComparator => {
+            .then(([updatedComparator, err]) => {
+                if (err != null) {
+                    showToast(err, false);
+                } else {
+                    showToast("Lecture des colonnes disponibles terminée");
+                }
                 newSelection.comparators[selectedIndex] = updatedComparator;
-                showToast("Lecture des colonnes disponibles terminée");
-                setSelection(newSelection);
-            })
-            .catch(e => {
-                newSelection.comparators[selectedIndex] = newComparator;
-                showToast(e, false);
-                setSelection(newSelection);
+                setSelection(newSelection)
             })
 
         history.push("/");
@@ -144,33 +140,30 @@ function App() {
             return filtered;
         }, []);
 
-        let ready = true;
 
-        if (indexCols.length === 0) {
-            showToast("Aucune colonne index sélectionnée", false);
-            ready = false;
-        }
+         const newSelection = {...selection};
+         const newComparator = {
+             ...selectedComparator,
+             index_cols: indexCols,
+             compare_cols: compareCols,
+             display_cols: displayCols,
+         };
 
-        if (compareCols.length === 0) {
-            showToast("Aucune colonne à comparer sélectionnée", false);
-            ready = false;
-        }
-
-        if (displayCols.length === 0) {
-            showToast("Aucune colonne à afficher sélectionnée", false);
-            ready = false;
-        }
-
-        const newSelection = {...selection};
-        newSelection.comparators[selectedIndex] = {
-            ...selectedComparator,
-            index_cols: indexCols,
-            compare_cols: compareCols,
-            display_cols: displayCols,
-            status: ready ? Status.Ready : Status.ColsAvailable
-        }
-
-        setSelection(newSelection);
+         invoke('update_comparator_status', {
+             comparator: newComparator,
+             directories: selection.dirs,
+             maxStatusBefore: Status.ColsAvailable,
+             minStatusAfter: Status.Ready,
+         })
+             .then(([updatedComparator, err]) => {
+                 if (err != null) {
+                     showToast(err, false);
+                 } else {
+                     showToast("Sélection des colonnes valide");
+                 }
+                 newSelection.comparators[selectedIndex] = updatedComparator;
+                 setSelection(newSelection)
+             })
 
         history.push("/");
 

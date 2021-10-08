@@ -52,12 +52,28 @@ lazy_static! {
 
 
 #[derive(Serialize)]
-struct StringError(String);
+struct StringError(Option<String>);
 
 
 impl From<anyhow::Error> for StringError {
     fn from(e: anyhow::Error) -> Self {
-        StringError(format!("Erreur: {:#}", e))
+        StringError(Some(format!("Erreur: {:#}", e)))
+    }
+}
+
+impl StringError {
+    fn none() -> Self {
+        StringError(None)
+    }
+
+    fn add_error(&mut self, error: anyhow::Error) {
+        // Add to list of errors
+        self.0 = match &mut self.0 {
+            None => Some(error.to_string()),
+            Some(prev) => {
+                Some(format!("{} / {}", prev, error))
+            }
+        }
     }
 }
 
@@ -80,15 +96,22 @@ fn main() {
 #[tauri::command]
 fn update_selection_status(
     mut selection: Selection,
-    min_status: Status
-) -> Result<Selection, StringError> {
-    println!("-> update_selection_status command with min {:?}", &min_status);
+    max_status_before: Status,
+    min_status_after: Status
+) -> (Selection, StringError) {
+    println!("-> update_selection_status command with min {:?}", &min_status_after);
+
+    let mut errors = StringError::none();
 
     for comparator in &mut selection.comparators {
-        comparator.update_status(min_status, &selection.dirs)?;
+        if let Err(e) = comparator
+            .update_status(max_status_before, min_status_after, &selection.dirs) {
+
+            errors.add_error(e);
+        }
     }
 
-    Ok(selection)
+    (selection, errors)
 }
 
 
@@ -96,13 +119,16 @@ fn update_selection_status(
 fn update_comparator_status(
     mut comparator: Comparator,
     directories: Vec<PathBuf>,
-    min_status: Status
-) -> Result<Comparator, StringError> {
-    println!("-> update_comparator_status command with min {:?}", &min_status);
+    max_status_before: Status,
+    min_status_after: Status
+) -> (Comparator, StringError) {
+    println!("-> update_comparator_status command with min {:?}", &min_status_after);
 
-    comparator.update_status(min_status, &directories)?;
+    match comparator.update_status(max_status_before, min_status_after, &directories) {
+        Ok(()) => (comparator, StringError::none()),
+        Err(e) => (comparator, e.into())
+    }
 
-    Ok(comparator)
 }
 
 

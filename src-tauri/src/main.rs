@@ -154,9 +154,9 @@ fn open_selection(path: PathBuf) -> Result<Selection, StringError> {
     let s = fs::read_to_string(path).context("Reading selection")?;
     let mut selection: Selection = serde_json::from_str(&s).context("Parsing selection")?;
 
-    // Force status to Initial
+    // Update status, starting at Initial
     for comparator in &mut selection.comparators {
-        comparator.status = Status::Initial;
+        comparator.update_status(Status::Initial, Status::Initial, &selection.dirs)?;
     }
 
     Ok(selection)

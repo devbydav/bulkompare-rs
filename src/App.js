@@ -11,7 +11,7 @@ import NavBar from "./components/NavBar/NavBar";
 import SourceSelection from "./components/selection/SourceSelection";
 import FileProperties from "./components/selection/FileProperties";
 import ColumnSelection from "./components/selection/ColumnSelection";
-import ResultDisplay from "./components/ResultDisplay";
+import ResultDisplay from "./components/ResultDisplay/ResultDisplay";
 import {Alert} from "@mui/lab";
 
 import {defaultComparator, defaultSelection} from "./constants/defaults"

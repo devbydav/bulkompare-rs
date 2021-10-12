@@ -6,9 +6,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import {Button} from "@mui/material";
 
 
-function ResultDisplay({comparisonResult, showToast}) {
-
-    console.log("-> Rendering ResultDisplay");
+function Differences({comparisonResult, showToast}) {
 
     const handleLeafAction = (ext, index) => {
 
@@ -76,4 +74,4 @@ function ResultDisplay({comparisonResult, showToast}) {
     );
 }
 
-export default ResultDisplay;
+export default Differences;

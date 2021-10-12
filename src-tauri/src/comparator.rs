@@ -24,9 +24,9 @@ pub struct Difference {
 }
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct ComparatorResult {
-    in_one: String,
+    in_one: Vec<Vec<Vec<String>>>,
     not_compared: String,
     differences: Vec<DifferentLine>,
     display_cols: Vec<String>
@@ -246,9 +246,26 @@ impl Comparator {
             line.result = Comparison::InOneOnly
         }
 
+        let in_one_left: Vec<_> = self.lines_left
+            .iter()
+            .filter_map(|l| if l.result == Comparison::InOneOnly {
+                Some(l.display.clone())
+            } else {
+                None
+            })
+            .collect();
+
+        let in_one_right: Vec<_> = self.lines_right
+            .iter()
+            .filter_map(|l| if l.result == Comparison::InOneOnly {
+                Some(l.display.clone())
+            } else {
+                None
+            })
+            .collect();
 
         let r = ComparatorResult {
-            in_one: "".to_string(),
+            in_one: vec![in_one_left, in_one_right],
             not_compared: "".to_string(),
             differences,
             display_cols: self.display_cols.clone()

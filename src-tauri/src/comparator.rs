@@ -124,7 +124,7 @@ impl Comparator {
             .iter()
             .zip(directories)
             .map(|(csv_set, directory)| {
-                csv_set.get_headers(directory, &self.ext)
+                csv_set.common_cols(directory, &self.ext)
             })
             .collect();
 

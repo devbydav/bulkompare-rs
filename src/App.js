@@ -83,6 +83,7 @@ function App() {
                 }
                 setSelection(updatedSelection)
             })
+            .catch(e => showToast("Erreur: " + e, false))
 
         history.push("/");
     }
@@ -112,6 +113,7 @@ function App() {
                 newSelection.comparators[selectedIndex] = updatedComparator;
                 setSelection(newSelection)
             })
+            .catch(e => showToast("Erreur: " + e, false))
 
         history.push("/");
     }
@@ -164,6 +166,7 @@ function App() {
                  newSelection.comparators[selectedIndex] = updatedComparator;
                  setSelection(newSelection)
              })
+             .catch(e => showToast("Erreur: " + e, false))
 
         history.push("/");
 

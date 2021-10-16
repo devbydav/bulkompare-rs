@@ -27,8 +27,7 @@ function FileProperties({fileProperties, selectedExt, handleSave}) {
     }
 
     const handleHeaderChange = (i, newVal) => {
-        // todo: check if integer
-        updateState(i, "header", newVal);
+        updateState(i, "header", parseInt(newVal) || 0);
     }
 
     const handleSeparatorChange = (i, newVal) => {

@@ -73,7 +73,7 @@ function FileProperties({fileProperties, selectedExt, handleSave}) {
                             id={"Comment" + i}
                             label="Commentaire"
                             variant="outlined"
-                            value={csvSets[i].encoding}
+                            value={csvSets[i].comment}
                             onChange={e => handleCommentChange(i, e.target.value)}
                         />
 

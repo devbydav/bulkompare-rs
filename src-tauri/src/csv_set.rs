@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Result, Context};
+use anyhow::{Result, Context, ensure};
 use serde::{Serialize, Deserialize};
 use encoding_rs_io::{DecodeReaderBytesBuilder, DecodeReaderBytes};
 use encoding_rs::WINDOWS_1252;
@@ -10,12 +10,12 @@ use csv::{StringRecord, Reader};
 use crate::helpers::{Files, Comparison, Columns, Line};
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CsvSet {
     pub encoding: String,
     pub comment: String,
     pub skip_blank_lines: bool,
-    pub header: u8,
+    pub header: usize,
     pub separator: String,
     pub strip: bool,
     pub ignore_whitespace: bool,
@@ -75,14 +75,28 @@ impl CsvSet {
     fn csv_reader(&self, path: &PathBuf) -> Result<Reader<DecodeReaderBytes<File, Vec<u8>>>> {
         let file = File::open(path)?;
 
+        let separator = if self.separator.is_empty() {
+            b'\t'
+        } else {
+            ensure!(self.separator.as_bytes().len() == 1, "Séparateur invalide");
+            self.separator.as_bytes()[0]
+        };
+
+        let comment = if self.comment.is_empty() {
+            None
+        } else {
+            ensure!(self.comment.as_bytes().len() == 1, "Commentaire invalide");
+            Some(self.comment.as_bytes()[0])
+        };
+
         let transcoded = DecodeReaderBytesBuilder::new()
             .encoding(Some(WINDOWS_1252))
             .build(file);
 
         Ok(csv::ReaderBuilder::new()
-            .delimiter(b'\t')
+            .delimiter(separator)
             .flexible(true)
-            .comment(Some(b'#'))
+            .comment(comment)
             .has_headers(false)
             .from_reader(transcoded))
 
@@ -93,7 +107,7 @@ impl CsvSet {
         println!("Reading header for {:?}", path);
         let mut rdr = self.csv_reader(path)?;
 
-        let header = rdr.records() .next().unwrap()?;
+        let header = rdr.records().skip(self.header).next().unwrap()?;
         Ok(header)
     }
 
@@ -105,7 +119,7 @@ impl CsvSet {
 
         for path in files {
             let mut reader = self.csv_reader(&path)?;
-            let header = reader.records().next().unwrap()?;
+            let header = reader.records().skip(self.header).next().unwrap()?;
 
             // Get the column indices in this file
             let index_indices: Vec<usize> = cols.index

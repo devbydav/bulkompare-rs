@@ -141,7 +141,24 @@ impl Comparator {
         // println!("Available headers : {:?}", self.available_cols);
         ensure!(self.available_cols.len() > 0, "Aucune colonne commune aux fichiers");
 
+        // Clear invalid selected columns
+        self.index_cols = self.clear_unavailable_cols(&self.index_cols);
+        self.compare_cols = self.clear_unavailable_cols(&self.compare_cols);
+        self.display_cols = self.clear_unavailable_cols(&self.display_cols);
+
         Ok(())
+    }
+
+    /// Returns selection columns that are available in the data set
+    fn clear_unavailable_cols(&self, selection: &Vec<String>) -> Vec<String> {
+        selection
+            .iter()
+            .filter_map(|old_col| if self.available_cols.contains(old_col) {
+                Some(old_col.clone())
+            } else {
+                None
+            })
+            .collect()
     }
 
     fn check_selected_columns(&mut self) -> Result<()> {

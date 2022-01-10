@@ -2,6 +2,7 @@ import React from "react";
 import {Box, Tabs, Tab, Typography} from "@mui/material";
 import Differences from "./Differences";
 import InOne from "./InOne";
+import Summary from "./Summary";
 
 
 function TabPanel(props) {
@@ -39,24 +40,40 @@ function ResultDisplay({comparisonResult, showToast}) {
         <>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
                 <Tabs value={selectedTabIndex} onChange={handleTabChange} aria-label="result tabs" centered>
-                    <Tab label="Differences" id="tab0" />
-                    <Tab label="Un seul set" id="tab1" />
+                    <Tab label="Résumé" id="tab0" />
+                    <Tab label="Differences" id="tab1" />
+                    <Tab label="Un seul set" id="tab2" />
                 </Tabs>
             </Box>
 
-            <TabPanel value={selectedTabIndex} index={0}>
-                <Differences
-                    comparisonResult={comparisonResult}
-                    showToast={showToast}
-                />
-            </TabPanel>
+            <Box
+                display="flex"
+                justifyContent="center"
+            >
+                <TabPanel value={selectedTabIndex} index={0}>
+                    <Summary comparisonResult={comparisonResult}/>
+                </TabPanel>
 
-            <TabPanel value={selectedTabIndex} index={1}>
-                <InOne
-                    comparisonResult={comparisonResult}
-                    showToast={showToast}
-                />
-            </TabPanel>
+                <TabPanel value={selectedTabIndex} index={1}>
+                    <Differences
+                        comparisonResult={comparisonResult}
+                        showToast={showToast}
+                    />
+                </TabPanel>
+
+                <TabPanel value={selectedTabIndex} index={2}>
+                    <InOne
+                        comparisonResult={comparisonResult}
+                        showToast={showToast}
+                    />
+                </TabPanel>
+
+            </Box>
+
+
+
+
+
 
         </>
 

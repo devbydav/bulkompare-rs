@@ -1,5 +1,6 @@
 import React from 'react';
 import {invoke} from '@tauri-apps/api/tauri';
+import {open, save} from '@tauri-apps/api/dialog';
 import {Route, Switch, useHistory} from 'react-router-dom';
 import {Button, Stack} from '@mui/material';
 
@@ -11,26 +12,49 @@ const NavBar = ({selection, setSelection, comparator, selectedExt, setSelectedIn
 
     const handleSaveSelection = () => {
         console.log("saving sel", selection);
-        invoke('save_selection', {
-                path: "config/default.json",
-                selection: selection
-            }
-        )
-            .then(() => showToast("Sélection enregistrée"))
+
+        save({
+            defaultPath: "config/default.json",
+            filters: [
+                    {
+                        name: "Fichier sélection",
+                        extensions: ["json"],
+                    },
+                ],
+        })
+            .then(path => {
+                if (path) {
+                    return invoke('save_selection', {path, selection: selection})
+                        .then(() => showToast("Sélection enregistrée"));
+                }
+            })
             .catch(e => showToast(e, false))
     };
 
     const handleOpenSelection = () => {
         console.log("opening sel", selection);
-        invoke('open_selection', {
-                path: "config/default.json"
-            }
-        )
-            .then((newSelection) => {
-                setSelection(newSelection);
-                showToast("Nouvelle sélection importée")
+
+        open({
+            defaultPath: "config",
+            filters: [
+                {
+                    name: "Fichier sélection",
+                    extensions: ["json"],
+                },
+            ],
+            multiple: false,
+            directory: false,
+        })
+            .then(path => {
+                if (path) {
+                    return invoke('open_selection', {path})
+                        .then((newSelection) => {
+                            setSelection(newSelection);
+                            showToast("Nouvelle sélection importée")
+                        })
+                }
             })
-            .catch(e => showToast(e, false))
+            .catch(e => showToast(e, false));
     };
 
     return (

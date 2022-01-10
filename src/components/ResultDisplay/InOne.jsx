@@ -66,7 +66,7 @@ function InOne({comparisonResult, showToast}) {
                                                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                                 >
                                                                     {row.map(value => (
-                                                                        <TableCell>{value}</TableCell>
+                                                                        <TableCell key={value}>{value}</TableCell>
                                                                     ))}
                                                                     <TableCell>
                                                                         <Button onClick={() => handleAction(ext, row)}>

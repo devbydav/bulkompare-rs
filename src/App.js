@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {invoke} from '@tauri-apps/api/tauri';
-import {useHistory} from 'react-router-dom';
-import {Switch, Route} from "react-router-dom";
+import {useNavigate} from 'react-router-dom';
+import {Route, Routes} from "react-router-dom";
 import {Snackbar, Stack} from '@mui/material';
 
 import storkLogoAnimated from './resources/images/stork_animated.svg';
@@ -20,7 +20,7 @@ import {Status} from "./constants/constants";
 
 function App() {
     console.log("-> Rendering App")
-    const history = useHistory();
+    const navigate = useNavigate()
     const [comparing, setComparing] = useState(false);
     const [selection, setSelection] = useState(defaultSelection);
     const [comparisonResult, setComparisonResult] = useState(null);
@@ -85,7 +85,7 @@ function App() {
             })
             .catch(e => showToast("Erreur: " + e, false))
 
-        history.push("/");
+        navigate("/");
     }
 
     const handleFilePropertiesSave = (newCsvSets) => {
@@ -115,7 +115,7 @@ function App() {
             })
             .catch(e => showToast("Erreur: " + e, false))
 
-        history.push("/");
+        navigate("/");
     }
 
      const handleColumnsSelectionSave = (csvCols) => {
@@ -168,7 +168,7 @@ function App() {
              })
              .catch(e => showToast("Erreur: " + e, false))
 
-        history.push("/");
+        navigate("/");
 
     }
 
@@ -176,7 +176,7 @@ function App() {
         setComparing(true);
         invoke('compare', {selection: selection})
             .then((c) => {
-                history.push("/resultDisplay");
+                navigate("/resultDisplay");
                 setComparisonResult(c);
                 showToast("Comparaison terminée");
                 setComparing(false);
@@ -207,38 +207,44 @@ function App() {
                         <img src={storkLogoAnimated} className="Stork-logo" alt="logo"/>
                     </div>
                     :
-                    <Switch>
-                        <Route path="/source">
+                    <Routes>
+                        <Route path="/source" element={
                             <SourceSelection
                                 selection={selection}
                                 handleSave={handleSourceSelectionSave}
                             />
+                        }>
                         </Route>
-                        <Route path="/fileProperties">
+
+                        <Route path="/fileProperties" element={
                             <FileProperties
                                 fileProperties={selectedComparator?.csv_sets}
                                 selectedExt={selectedExt}
                                 handleSave={handleFilePropertiesSave}
                             />
+                        }>
+
                         </Route>
-                        <Route path="/columnSelection">
+                        <Route path="/columnSelection" element={
                             <ColumnSelection
                                 comparator={selectedComparator}
                                 selectedExt={selectedExt}
                                 handleSave={handleColumnsSelectionSave}
                             />
+                        }>
                         </Route>
-                        <Route path="/resultDisplay">
-                            {comparisonResult ?
+
+                        <Route path="/resultDisplay" element={
+                            comparisonResult ?
                                 <ResultDisplay comparisonResult={comparisonResult} showToast={showToast}/>
                                 :
-                                null}
+                                null
+                        }>
                         </Route>
-                        <Route path="/">
-                            <p>HOME</p>
-                            <img src={storkLogo} className="Stork-logo" alt="logo"/>
-                        </Route>
-                    </Switch>
+
+                        <Route path="/" element={<img src={storkLogo} className="Stork-logo" alt="logo"/>} />
+
+                    </Routes>
                 }
                 {snackbarConfig ?
                     <Snackbar

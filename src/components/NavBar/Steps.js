@@ -1,5 +1,5 @@
 import React from 'react';
-import {useHistory} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {Stepper, Step, StepButton} from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
@@ -9,21 +9,21 @@ import {Status} from "../../constants/constants";
 
 
 const Steps = ({comparator}) => {
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const steps = [
         {
             title: "Propriétés CSV",
             disabled: comparator.status < Status.FilesAvailable,
             completed: comparator.status > Status.FilesAvailable,
-            onClick: () => history.push("/fileProperties"),
+            onClick: () => navigate("/fileProperties"),
         },
         {
             title: "Choix colonnes",
             disabled: comparator.status < Status.ColsAvailable,
             completed: comparator.status > Status.ColsAvailable,
             isSelected: false,
-            onClick: () => history.push("/columnSelection"),
+            onClick: () => navigate("/columnSelection"),
         },
     ];
 

@@ -1,14 +1,14 @@
 import React from 'react';
 import {invoke} from '@tauri-apps/api/tauri';
 import {open, save} from '@tauri-apps/api/dialog';
-import {Route, Switch, useHistory} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {Button, Stack} from '@mui/material';
 
 import ComparatorConfigControl from "./ComparatorConfigControl";
 
 
 const NavBar = ({selection, setSelection, comparator, selectedExt, setSelectedIndex, handleCompare, showToast}) => {
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const handleSaveSelection = () => {
         console.log("saving sel", selection);
@@ -60,7 +60,7 @@ const NavBar = ({selection, setSelection, comparator, selectedExt, setSelectedIn
     return (
         <Stack spacing={2} direction="row">
             <Button variant="outlined"
-                    onClick={() => history.push('/source')}>
+                    onClick={() => navigate('/source')}>
                 Fichiers
             </Button>
 

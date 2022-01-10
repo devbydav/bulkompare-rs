@@ -40,28 +40,21 @@ const NavBar = ({selection, setSelection, comparator, selectedExt, setSelectedIn
                 Fichiers
             </Button>
 
-            <Switch>
-                <Route path="/source">
-                </Route>
-                <Route>
-                    {comparator &&
-                    <ComparatorConfigControl
-                        selection={selection}
-                        selectedExt={selectedExt}
-                        setSelectedIndex={setSelectedIndex}
-                        comparator={comparator}
-                        handleCompare={handleCompare}
-                    />}
+            {comparator &&
+                <ComparatorConfigControl
+                    selection={selection}
+                    selectedExt={selectedExt}
+                    setSelectedIndex={setSelectedIndex}
+                    comparator={comparator}
+                    handleCompare={handleCompare}
+                />}
 
-                    <Button variant="outlined" onClick={handleOpenSelection}>
-                        Ouvrir sélection
-                    </Button>
-                    <Button variant="outlined" onClick={handleSaveSelection}>
-                        Sauver sélection
-                    </Button>
-
-                </Route>
-            </Switch>
+            <Button variant="outlined" onClick={handleOpenSelection}>
+                Ouvrir sélection
+            </Button>
+            <Button variant="outlined" onClick={handleSaveSelection}>
+                Sauver sélection
+            </Button>
 
         </Stack>
 

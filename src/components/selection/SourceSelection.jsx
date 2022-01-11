@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import {
     Stack,
     Button,
@@ -11,8 +12,14 @@ import {
     IconButton,
     ListItemText,
     Card,
-    Container, Divider
+    Container,
+    Divider,
+    InputAdornment,
+    OutlinedInput,
+    InputLabel,
+    FormControl
 } from '@mui/material';
+import {open} from "@tauri-apps/api/dialog";
 
 
 function SourceSelection({selection, handleSave}) {
@@ -43,6 +50,17 @@ function SourceSelection({selection, handleSave}) {
         setDirs(newDirs);
     }
 
+    const handleDirOpen = (i) => {
+        open({
+            multiple: false,
+            directory: true,
+        })
+            .then(path => {
+                if (path) {
+                    handleDirChange(i, path);
+                }
+            })
+    }
 
     const handleAddExtension = () => {
         const newExtension = addExtension.trim();
@@ -91,14 +109,27 @@ function SourceSelection({selection, handleSave}) {
                             onChange={e => handleNameChange(i, e.target.value)}
                         />
 
-                        <TextField
-                            id={"Dir" + i}
-                            label="Répertoire"
-                            variant="outlined"
-                            value={dirs[i]}
-                            onChange={e => handleDirChange(i, e.target.value)}
-                        />
-
+                        <FormControl sx={{ m: 1, width: '50ch' }} variant="outlined">
+                            <InputLabel htmlFor={"Dir" + i}>Répertoire</InputLabel>
+                            <OutlinedInput
+                                id={"Dir" + i}
+                                type="text"
+                                value={dirs[i]}
+                                onChange={e => handleDirChange(i, e.target.value)}
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => handleDirOpen(i)}
+                                            onMouseDown={e=>e.preventDefault()}
+                                            edge="end"
+                                        >
+                                            <FolderOpenIcon/>
+                                        </IconButton>
+                                    </InputAdornment>
+                                }
+                                label="Répertoire"
+                            />
+                        </FormControl>
 
                     </Stack>
                 ))}

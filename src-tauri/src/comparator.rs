@@ -60,7 +60,7 @@ impl Comparator {
         &mut self,
         max_status_before: Status,
         min_status_after: Status,
-        directories: &Vec<PathBuf>,
+        directories: &[PathBuf],
     ) -> Result<()> {
         // status is max_status_before at most
         if self.status > max_status_before {
@@ -104,22 +104,18 @@ impl Comparator {
     }
 
     /// Makes sure each directory has at least 1 file with desired extension
-    pub fn files_available(&mut self, directories: &Vec<PathBuf>) -> Result<()> {
-        for i in 0..=1 {
-            let mut files = Files::new(&directories[i], &self.ext)?;
+    pub fn files_available(&mut self, directories: &[PathBuf]) -> Result<()> {
+        for directory in directories.iter().take(2) {
+            let mut files = Files::new(directory, &self.ext)?;
             files.next().with_context(|| {
-                format!(
-                    "Aucun fichier {} dans {}",
-                    self.ext,
-                    directories[i].display()
-                )
+                format!("Aucun fichier {} dans {}", self.ext, directory.display())
             })?;
         }
 
         Ok(())
     }
 
-    pub fn read_headers(&mut self, directories: &Vec<PathBuf>) -> Result<()> {
+    pub fn read_headers(&mut self, directories: &[PathBuf]) -> Result<()> {
         println!("Comparator reading headers ...");
 
         let headers: Result<Vec<Vec<String>>> = self
@@ -141,7 +137,7 @@ impl Comparator {
 
         // println!("Available headers : {:?}", self.available_cols);
         ensure!(
-            self.available_cols.len() > 0,
+            !self.available_cols.is_empty(),
             "Aucune colonne commune aux fichiers"
         );
 
@@ -154,7 +150,7 @@ impl Comparator {
     }
 
     /// Returns selection columns that are available in the data set
-    fn clear_unavailable_cols(&self, selection: &Vec<String>) -> Vec<String> {
+    fn clear_unavailable_cols(&self, selection: &[String]) -> Vec<String> {
         selection
             .iter()
             .filter_map(|old_col| {
@@ -170,15 +166,15 @@ impl Comparator {
     fn check_selected_columns(&mut self) -> Result<()> {
         // Check that some columns are selected
         ensure!(
-            self.index_cols.len() > 0,
+            !self.index_cols.is_empty(),
             "Aucune colonne d'index sélectionnée"
         );
         ensure!(
-            self.compare_cols.len() > 0,
+            !self.compare_cols.is_empty(),
             "Aucune colonne à comparer sélectionnée"
         );
         ensure!(
-            self.display_cols.len() > 0,
+            !self.display_cols.is_empty(),
             "Aucune colonne à afficher sélectionnée"
         );
 
@@ -194,7 +190,7 @@ impl Comparator {
         Ok(())
     }
 
-    pub fn compare(&mut self, directories: &Vec<PathBuf>) -> Result<ComparatorResult> {
+    pub fn compare(&mut self, directories: &[PathBuf]) -> Result<ComparatorResult> {
         println!("Comparator comparing ...");
         let mut differences = Vec::new();
 
@@ -276,11 +272,11 @@ impl Comparator {
             }
         }
 
-        while let Some(line) = iter_left.next() {
+        for line in iter_left {
             line.result = Comparison::InOneOnly
         }
 
-        while let Some(line) = iter_right.next() {
+        for line in iter_right {
             line.result = Comparison::InOneOnly
         }
 
@@ -319,7 +315,7 @@ impl Comparator {
 }
 
 fn check_values_are_identical(
-    compare_cols: &Vec<String>,
+    compare_cols: &[String],
     left: &mut Line,
     right: &mut Line,
     differences: &mut Vec<DifferentLine>,

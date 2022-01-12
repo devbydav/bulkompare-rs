@@ -12,7 +12,7 @@ impl<'a> Iterator for Files<'a> {
     type Item = PathBuf;
 
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(e) = self.read_dir.next() {
+        for e in self.read_dir.by_ref() {
             match e {
                 Ok(e) => {
                     let p = e.path();

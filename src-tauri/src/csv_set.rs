@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::{ensure, Context, Result};
 use csv::{Reader, StringRecord};
@@ -47,7 +47,7 @@ impl CsvSet {
         let mut lines = self.read_csv(columns, files)?;
         lines.sort_unstable_by(|a, b| a.index.cmp(&b.index));
 
-        if lines.len() == 0 {
+        if lines.is_empty() {
             println!("No line !");
             return Ok(vec![]);
         }
@@ -64,7 +64,7 @@ impl CsvSet {
     }
 
     /// Returns a reader for path
-    fn csv_reader(&self, path: &PathBuf) -> Result<Reader<DecodeReaderBytes<File, Vec<u8>>>> {
+    fn csv_reader(&self, path: &Path) -> Result<Reader<DecodeReaderBytes<File, Vec<u8>>>> {
         let file = File::open(path)?;
 
         let separator = if self.separator.is_empty() {
@@ -94,11 +94,11 @@ impl CsvSet {
     }
 
     /// Returns the header of a csv file
-    fn csv_header(&self, path: &PathBuf) -> Result<StringRecord> {
+    fn csv_header(&self, path: &Path) -> Result<StringRecord> {
         println!("Reading header for {:?}", path);
         let mut rdr = self.csv_reader(path)?;
 
-        let header = rdr.records().skip(self.header).next().unwrap()?;
+        let header = rdr.records().nth(self.header).unwrap()?;
         Ok(header)
     }
 
@@ -109,7 +109,7 @@ impl CsvSet {
 
         for path in files {
             let mut reader = self.csv_reader(&path)?;
-            let header = reader.records().skip(self.header).next().unwrap()?;
+            let header = reader.records().nth(self.header).unwrap()?;
 
             // Get the column indices in this file
             let index_indices: Vec<usize> = cols

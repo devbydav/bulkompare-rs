@@ -18,13 +18,11 @@ serde = { version = "1.0", features = [ "derive" ] }
 serde_repr = "0.1"
 tauri = { version = "1.0.0-beta.8", features = ["api-all"] }
 anyhow = "1.0"
-chrono = "0.4"
 encoding_rs = "0.8.26"
 encoding_rs_io = "0.1.7"
 csv = "1.1"
-lazy_static = "1.4.0"
+bulkompare-custom = { path = "../../bulkompare-custom", optional = true}
 
 [features]
 default = [ "custom-protocol" ]
 custom-protocol = [ "tauri/custom-protocol" ]
-custom_actions = [ ]

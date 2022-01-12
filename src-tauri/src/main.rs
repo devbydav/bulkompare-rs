@@ -3,9 +3,6 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-#[macro_use]
-extern crate lazy_static;
-
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -16,39 +13,13 @@ use anyhow::Context;
 use comparator::ComparatorResult;
 use selection::Selection;
 use comparator::Comparator;
-use config::Config;
 use helpers::Status;
-
-#[cfg(feature = "custom_actions")]
-use custom_actions::custom_on_click_result_leaf;
 
 
 mod selection;
 mod comparator;
 mod helpers;
 mod csv_set;
-mod config;
-
-#[cfg(feature = "custom_actions")]
-mod custom_actions;
-
-
-lazy_static! {
-    static ref CONFIG_DIR: PathBuf = {
-        // current dir in debug, exe dir in release
-        if cfg!(debug_assertions) {
-            let current_dir = std::env::current_dir().unwrap();
-            current_dir.join("config")
-        } else {
-            let current_exe = std::env::current_exe().unwrap();
-            current_exe.parent().unwrap().join("config")
-        }
-    };
-
-    static ref CONFIG: Config = {
-        Config::imported(&CONFIG_DIR)
-    };
-}
 
 
 #[derive(Serialize)]
@@ -189,13 +160,13 @@ fn on_click_result_leaf(
     println!("-> click_result_leaf");
 
 
-    #[cfg(feature = "custom_actions")]
+    #[cfg(feature = "bulkompare-custom")]
     {
-        custom_on_click_result_leaf(col_names, col_values, file_extension)
+        bulkompare_custom::custom_on_click_result_leaf(col_names, col_values, file_extension)
             .map_err(|e| e.into())
     }
 
-    #[cfg(not(feature = "custom_actions"))]
+    #[cfg(not(feature = "bulkompare-custom"))]
     {
         println!("{}\n{:?}\n{:?}", file_extension, col_names, col_values);
         Ok("".to_string())

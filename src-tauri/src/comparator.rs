@@ -1,20 +1,18 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use serde::{Serialize, Deserialize};
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{bail, ensure, Context, Result};
+use serde::{Deserialize, Serialize};
 
 use crate::csv_set::CsvSet;
-use crate::helpers::{Comparison, Line, Columns, Status, Files};
-
+use crate::helpers::{Columns, Comparison, Files, Line, Status};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DifferentLine {
     index: String,
     display_values: Vec<String>,
-    differences: Vec<Difference>
+    differences: Vec<Difference>,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Difference {
@@ -23,15 +21,13 @@ pub struct Difference {
     right: String,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct ComparatorResult {
     in_one: Vec<Vec<Vec<String>>>,
     not_compared: String,
     differences: Vec<DifferentLine>,
-    display_cols: Vec<String>
+    display_cols: Vec<String>,
 }
-
 
 #[derive(Serialize, Deserialize)]
 pub struct Comparator {
@@ -58,37 +54,40 @@ fn skip_status_serialization(status: &Status) -> bool {
     *status == Status::SkipSerialize
 }
 
-
 impl Comparator {
-
     /// Makes sure each directory has at least 1 file with desired extension
     pub fn update_status(
         &mut self,
         max_status_before: Status,
         min_status_after: Status,
-        directories: &Vec<PathBuf>
+        directories: &Vec<PathBuf>,
     ) -> Result<()> {
-
         // status is max_status_before at most
         if self.status > max_status_before {
             self.status = max_status_before;
         }
 
         if self.status < Status::FilesAvailable {
-            println!("Try update {} from {:?} to FilesAvailable", self.ext, self.status);
+            println!(
+                "Try update {} from {:?} to FilesAvailable",
+                self.ext, self.status
+            );
             match self.files_available(directories) {
                 Err(e) if min_status_after >= Status::FilesAvailable => bail!(e),
                 Err(_) => return Ok(()),
-                Ok(()) => self.status = Status::FilesAvailable
+                Ok(()) => self.status = Status::FilesAvailable,
             }
         }
 
         if self.status < Status::ColsAvailable {
-            println!("Try update {} from {:?} to ColsAvailable", self.ext, self.status);
+            println!(
+                "Try update {} from {:?} to ColsAvailable",
+                self.ext, self.status
+            );
             match self.read_headers(directories) {
                 Err(e) if min_status_after >= Status::ColsAvailable => bail!(e),
                 Err(_) => return Ok(()),
-                Ok(()) => self.status = Status::ColsAvailable
+                Ok(()) => self.status = Status::ColsAvailable,
             }
         }
 
@@ -97,7 +96,7 @@ impl Comparator {
             match self.check_selected_columns() {
                 Err(e) if min_status_after >= Status::Ready => bail!(e),
                 Err(_) => return Ok(()),
-                Ok(()) => self.status = Status::Ready
+                Ok(()) => self.status = Status::Ready,
             }
         }
 
@@ -106,12 +105,15 @@ impl Comparator {
 
     /// Makes sure each directory has at least 1 file with desired extension
     pub fn files_available(&mut self, directories: &Vec<PathBuf>) -> Result<()> {
-
         for i in 0..=1 {
             let mut files = Files::new(&directories[i], &self.ext)?;
-            files.next().with_context(|| format!("Aucun fichier {} dans {}",
-                                                 self.ext,
-                                                 directories[i].display()))?;
+            files.next().with_context(|| {
+                format!(
+                    "Aucun fichier {} dans {}",
+                    self.ext,
+                    directories[i].display()
+                )
+            })?;
         }
 
         Ok(())
@@ -120,12 +122,11 @@ impl Comparator {
     pub fn read_headers(&mut self, directories: &Vec<PathBuf>) -> Result<()> {
         println!("Comparator reading headers ...");
 
-        let headers: Result<Vec<Vec<String>>> = self.csv_sets
+        let headers: Result<Vec<Vec<String>>> = self
+            .csv_sets
             .iter()
             .zip(directories)
-            .map(|(csv_set, directory)| {
-                csv_set.common_cols(directory, &self.ext)
-            })
+            .map(|(csv_set, directory)| csv_set.common_cols(directory, &self.ext))
             .collect();
 
         let mut headers = headers?;
@@ -139,7 +140,10 @@ impl Comparator {
             .collect();
 
         // println!("Available headers : {:?}", self.available_cols);
-        ensure!(self.available_cols.len() > 0, "Aucune colonne commune aux fichiers");
+        ensure!(
+            self.available_cols.len() > 0,
+            "Aucune colonne commune aux fichiers"
+        );
 
         // Clear invalid selected columns
         self.index_cols = self.clear_unavailable_cols(&self.index_cols);
@@ -153,26 +157,39 @@ impl Comparator {
     fn clear_unavailable_cols(&self, selection: &Vec<String>) -> Vec<String> {
         selection
             .iter()
-            .filter_map(|old_col| if self.available_cols.contains(old_col) {
-                Some(old_col.clone())
-            } else {
-                None
+            .filter_map(|old_col| {
+                if self.available_cols.contains(old_col) {
+                    Some(old_col.clone())
+                } else {
+                    None
+                }
             })
             .collect()
     }
 
     fn check_selected_columns(&mut self) -> Result<()> {
         // Check that some columns are selected
-        ensure!(self.index_cols.len() > 0, "Aucune colonne d'index sélectionnée");
-        ensure!(self.compare_cols.len() > 0, "Aucune colonne à comparer sélectionnée");
-        ensure!(self.display_cols.len() > 0, "Aucune colonne à afficher sélectionnée");
-
+        ensure!(
+            self.index_cols.len() > 0,
+            "Aucune colonne d'index sélectionnée"
+        );
+        ensure!(
+            self.compare_cols.len() > 0,
+            "Aucune colonne à comparer sélectionnée"
+        );
+        ensure!(
+            self.display_cols.len() > 0,
+            "Aucune colonne à afficher sélectionnée"
+        );
 
         // It doesn't make sense to compare columns selected for index
-        ensure!(!self.index_cols
-            .iter()
-            .any(|index_col| self.compare_cols.contains(index_col)),
-        "Certaines colonnes sont sélectionnées en index et comparaison");
+        ensure!(
+            !self
+                .index_cols
+                .iter()
+                .any(|index_col| self.compare_cols.contains(index_col)),
+            "Certaines colonnes sont sélectionnées en index et comparaison"
+        );
 
         Ok(())
     }
@@ -184,29 +201,34 @@ impl Comparator {
         let columns = Columns {
             index: &self.index_cols,
             compare: &self.compare_cols,
-            display: &self.display_cols
+            display: &self.display_cols,
         };
 
         self.lines_left = self.csv_sets[0].get_lines(&columns, &directories[0], &self.ext)?;
         self.lines_right = self.csv_sets[1].get_lines(&columns, &directories[1], &self.ext)?;
 
-
-        let mut iter_left = self.lines_left.iter_mut()
+        let mut iter_left = self
+            .lines_left
+            .iter_mut()
             .filter(|line| line.result != Comparison::DuplicatedIndex);
-        let mut line_left = iter_left.next()
-            .context("Left dataset is empty")?;
+        let mut line_left = iter_left.next().context("Left dataset is empty")?;
 
-        let mut iter_right = self.lines_right.iter_mut()
+        let mut iter_right = self
+            .lines_right
+            .iter_mut()
             .filter(|line| line.result != Comparison::DuplicatedIndex);
-        let mut line_right = iter_right.next()
-            .context("Right dataset is empty")?;
-
+        let mut line_right = iter_right.next().context("Right dataset is empty")?;
 
         loop {
             match line_left.index.cmp(&line_right.index) {
                 Ordering::Equal => {
                     // Found unique index match (duplicated are skipped) -> compare
-                    if check_values_are_identical(&self.compare_cols, line_left, line_right, &mut differences) {
+                    if check_values_are_identical(
+                        &self.compare_cols,
+                        line_left,
+                        line_right,
+                        &mut differences,
+                    ) {
                         line_left.result = Comparison::Identical;
                         line_right.result = Comparison::Identical;
                     } else {
@@ -219,20 +241,20 @@ impl Comparator {
                         (Some(next_left), Some(next_right)) => {
                             line_left = next_left;
                             line_right = next_right;
-                        },
+                        }
                         (Some(next_left), None) => {
                             next_left.result = Comparison::InOneOnly;
                             break;
-                        },
+                        }
                         (None, Some(next_right)) => {
                             next_right.result = Comparison::InOneOnly;
                             break;
-                        },
+                        }
                         (None, None) => {
                             break;
-                        },
+                        }
                     }
-                },
+                }
 
                 Ordering::Less => {
                     // Right is greater -> no match for current left, look at next left with current right
@@ -241,7 +263,7 @@ impl Comparator {
                         Some(next_left) => line_left = next_left,
                         None => break,
                     }
-                },
+                }
 
                 Ordering::Greater => {
                     // Left is greater -> no match for current right, look at next right with current left
@@ -250,7 +272,6 @@ impl Comparator {
                         Some(next_right) => line_right = next_right,
                         None => break,
                     }
-
                 }
             }
         }
@@ -263,21 +284,27 @@ impl Comparator {
             line.result = Comparison::InOneOnly
         }
 
-        let in_one_left: Vec<_> = self.lines_left
+        let in_one_left: Vec<_> = self
+            .lines_left
             .iter()
-            .filter_map(|l| if l.result == Comparison::InOneOnly {
-                Some(l.display.clone())
-            } else {
-                None
+            .filter_map(|l| {
+                if l.result == Comparison::InOneOnly {
+                    Some(l.display.clone())
+                } else {
+                    None
+                }
             })
             .collect();
 
-        let in_one_right: Vec<_> = self.lines_right
+        let in_one_right: Vec<_> = self
+            .lines_right
             .iter()
-            .filter_map(|l| if l.result == Comparison::InOneOnly {
-                Some(l.display.clone())
-            } else {
-                None
+            .filter_map(|l| {
+                if l.result == Comparison::InOneOnly {
+                    Some(l.display.clone())
+                } else {
+                    None
+                }
             })
             .collect();
 
@@ -285,46 +312,41 @@ impl Comparator {
             in_one: vec![in_one_left, in_one_right],
             not_compared: "".to_string(),
             differences,
-            display_cols: self.display_cols.clone()
+            display_cols: self.display_cols.clone(),
         };
         Ok(r)
     }
-
 }
-
 
 fn check_values_are_identical(
     compare_cols: &Vec<String>,
     left: &mut Line,
     right: &mut Line,
-    differences: &mut Vec<DifferentLine>
+    differences: &mut Vec<DifferentLine>,
 ) -> bool {
     let mut identical = true;
     let mut different_line = None;
 
-    for (i, (left_val, right_val)) in left.compare
-        .iter()
-        .zip(&right.compare)
-        .enumerate()
-    {
+    for (i, (left_val, right_val)) in left.compare.iter().zip(&right.compare).enumerate() {
         if left_val != right_val {
             identical = false;
             if different_line.is_none() {
                 different_line = Some(DifferentLine {
                     index: left.index.join("-"),
                     display_values: left.display.clone(),
-                    differences: vec![]
+                    differences: vec![],
                 })
             }
 
-
-            different_line.as_mut().unwrap().differences.push(
-                Difference {
+            different_line
+                .as_mut()
+                .unwrap()
+                .differences
+                .push(Difference {
                     col: compare_cols[i].clone(),
                     left: left_val.clone(),
                     right: right_val.clone(),
-                }
-            );
+                });
         }
     }
 
@@ -334,13 +356,10 @@ fn check_values_are_identical(
     identical
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-
-    }
+    fn it_works() {}
 }

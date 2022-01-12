@@ -1,10 +1,9 @@
-use serde::{Serialize, Deserialize};
-use serde_repr::{Serialize_repr, Deserialize_repr};
+use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 pub use file_iterator::Files;
 
 mod file_iterator;
-
 
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, PartialOrd, Copy, Clone)]
 #[repr(i8)]
@@ -13,9 +12,8 @@ pub enum Status {
     Initial = 0,
     FilesAvailable = 1,
     ColsAvailable = 2,
-    Ready = 3
+    Ready = 3,
 }
-
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Comparison {
@@ -26,7 +24,6 @@ pub enum Comparison {
     DuplicatedIndex,
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Line {
     pub index: Vec<String>,
@@ -34,7 +31,6 @@ pub struct Line {
     pub display: Vec<String>,
     pub result: Comparison,
 }
-
 
 pub struct Columns<'a> {
     pub index: &'a Vec<String>,

@@ -1,14 +1,13 @@
 use std::fs::File;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Result, Context, ensure};
-use serde::{Serialize, Deserialize};
-use encoding_rs_io::{DecodeReaderBytesBuilder, DecodeReaderBytes};
+use anyhow::{ensure, Context, Result};
+use csv::{Reader, StringRecord};
 use encoding_rs::WINDOWS_1252;
-use csv::{StringRecord, Reader};
+use encoding_rs_io::{DecodeReaderBytes, DecodeReaderBytesBuilder};
+use serde::{Deserialize, Serialize};
 
-use crate::helpers::{Files, Comparison, Columns, Line};
-
+use crate::helpers::{Columns, Comparison, Files, Line};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CsvSet {
@@ -21,12 +20,9 @@ pub struct CsvSet {
     pub ignore_whitespace: bool,
 }
 
-
 impl CsvSet {
-
     /// Returns the column that are present in all files of the set
     pub fn common_cols(&self, directory: &Path, ext: &str) -> Result<Vec<String>> {
-
         let mut files = Files::new(directory, ext)?;
 
         let first_header_record = self.csv_header(&files.next().context("Empty")?)?;
@@ -36,21 +32,17 @@ impl CsvSet {
         for file in files {
             // println!("For loop {:?}", file);
             let new_header_record = self.csv_header(&file)?;
-            header = header.into_iter()
-                .filter(|e| {
-                    new_header_record
-                        .iter()
-                        .any(|ne|ne == *e) })
+            header = header
+                .into_iter()
+                .filter(|e| new_header_record.iter().any(|ne| ne == *e))
                 .collect();
         }
 
-        Ok(header.iter().map(|e|e.to_string()).collect())
+        Ok(header.iter().map(|e| e.to_string()).collect())
     }
-
 
     /// Reads all lines
     pub fn get_lines(&self, columns: &Columns, directory: &Path, ext: &str) -> Result<Vec<Line>> {
-
         let files = Files::new(directory, ext)?;
         let mut lines = self.read_csv(columns, files)?;
         lines.sort_unstable_by(|a, b| a.index.cmp(&b.index));
@@ -61,10 +53,10 @@ impl CsvSet {
         }
 
         for i in 0..lines.len() - 1 {
-            if lines[i].index == lines[i+1].index {
+            if lines[i].index == lines[i + 1].index {
                 // println!("EQUAL!");
                 lines[i].result = Comparison::DuplicatedIndex;
-                lines[i+1].result = Comparison::DuplicatedIndex;
+                lines[i + 1].result = Comparison::DuplicatedIndex;
             }
         }
 
@@ -99,7 +91,6 @@ impl CsvSet {
             .comment(comment)
             .has_headers(false)
             .from_reader(transcoded))
-
     }
 
     /// Returns the header of a csv file
@@ -111,7 +102,6 @@ impl CsvSet {
         Ok(header)
     }
 
-
     fn read_csv(&self, cols: &Columns, files: Files) -> Result<Vec<Line>> {
         println!("CsvSet read_csv");
 
@@ -122,19 +112,22 @@ impl CsvSet {
             let header = reader.records().skip(self.header).next().unwrap()?;
 
             // Get the column indices in this file
-            let index_indices: Vec<usize> = cols.index
+            let index_indices: Vec<usize> = cols
+                .index
                 .iter()
-                .map(|col| header.iter().position(|e| e==col).unwrap())
+                .map(|col| header.iter().position(|e| e == col).unwrap())
                 .collect();
 
-            let compare_indices: Vec<usize> = cols.compare
+            let compare_indices: Vec<usize> = cols
+                .compare
                 .iter()
-                .map(|col| header.iter().position(|e| e==col).unwrap())
+                .map(|col| header.iter().position(|e| e == col).unwrap())
                 .collect();
 
-            let display_indices: Vec<usize> = cols.display
+            let display_indices: Vec<usize> = cols
+                .display
                 .iter()
-                .map(|col| header.iter().position(|e| e==col).unwrap())
+                .map(|col| header.iter().position(|e| e == col).unwrap())
                 .collect();
 
             // println!("Index selection: {:?}", cols.index);
@@ -156,15 +149,11 @@ impl CsvSet {
                         .iter()
                         .map(|i| record.get(*i).unwrap().to_string())
                         .collect(),
-                    result: Comparison::None
+                    result: Comparison::None,
                 });
-
             }
         }
 
         Ok(lines)
     }
-
 }
-
-

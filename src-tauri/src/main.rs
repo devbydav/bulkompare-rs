@@ -99,17 +99,22 @@ fn update_comparator_status(
 }
 
 #[tauri::command]
-async fn compare(selection: Selection) -> Result<HashMap<String, ComparatorResult>, StringError> {
+async fn compare(selection: Selection) -> (HashMap<String, ComparatorResult>, StringError) {
     println!("-> compare command");
 
     let mut diffs = HashMap::new();
+    let mut errors = StringError::none();
 
     for mut comparator in selection.comparators {
-        let res = comparator.compare(&selection.dirs)?;
-        diffs.insert(comparator.ext.clone(), res);
+        match comparator.compare(&selection.dirs) {
+            Ok(res) => {
+                diffs.insert(comparator.ext.clone(), res);
+            }
+            Err(e) => errors.add_error(e, &comparator.ext),
+        }
     }
 
-    Ok(diffs)
+    (diffs, errors)
 }
 
 #[tauri::command]

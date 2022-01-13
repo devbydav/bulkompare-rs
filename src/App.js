@@ -175,10 +175,14 @@ function App() {
     const handleCompare = () => {
         setComparing(true);
         invoke('compare', {selection: selection})
-            .then((c) => {
+            .then(([c, err]) => {
+                if (err != null) {
+                    showToast(err, false);
+                } else {
+                    showToast("Comparaison terminée");
+                }
                 navigate("/resultDisplay");
                 setComparisonResult(c);
-                showToast("Comparaison terminée");
                 setComparing(false);
             })
             .catch(e => {

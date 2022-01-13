@@ -33,11 +33,11 @@ impl StringError {
         StringError(None)
     }
 
-    fn add_error(&mut self, error: anyhow::Error) {
+    fn add_error(&mut self, error: anyhow::Error, extension: &str) {
         // Add to list of errors
         self.0 = match &mut self.0 {
-            None => Some(error.to_string()),
-            Some(prev) => Some(format!("{} / {}", prev, error)),
+            None => Some(format!("[{}] {:#}", extension, error)),
+            Some(prev) => Some(format!("{} / [{}] {:#}", prev, extension, error)),
         }
     }
 }
@@ -73,7 +73,7 @@ fn update_selection_status(
         if let Err(e) =
             comparator.update_status(max_status_before, min_status_after, &selection.dirs)
         {
-            errors.add_error(e);
+            errors.add_error(e, &comparator.ext);
         }
     }
 

@@ -121,7 +121,7 @@ async fn compare(selection: Selection) -> (HashMap<String, ComparatorResult>, St
 fn open_selection(path: PathBuf) -> Result<Selection, StringError> {
     println!("-> open_selection command");
 
-    let s = fs::read_to_string(path).context("Reading selection")?;
+    let s = fs::read_to_string(path).context("Lecture selection")?;
     let mut selection: Selection = serde_json::from_str(&s).context("Parsing selection")?;
 
     // Update status, starting at Initial
@@ -142,8 +142,8 @@ fn save_selection(path: PathBuf, mut selection: Selection) -> Result<(), StringE
         comparator.available_cols = vec![];
     }
 
-    let j = serde_json::to_string_pretty(&selection).context("serialization")?;
-    fs::write(path, j).context("writing selection")?;
+    let j = serde_json::to_string_pretty(&selection).context("Serialization")?;
+    fs::write(path, j).context("Ecriture selection")?;
     Ok(())
 }
 

@@ -207,13 +207,13 @@ impl Comparator {
             .lines_left
             .iter_mut()
             .filter(|line| line.result != Comparison::DuplicatedIndex);
-        let mut line_left = iter_left.next().context("Left dataset is empty")?;
+        let mut line_left = iter_left.next().context("Dataset gauche vide")?;
 
         let mut iter_right = self
             .lines_right
             .iter_mut()
             .filter(|line| line.result != Comparison::DuplicatedIndex);
-        let mut line_right = iter_right.next().context("Right dataset is empty")?;
+        let mut line_right = iter_right.next().context("Dataset droit vide")?;
 
         loop {
             match line_left.index.cmp(&line_right.index) {

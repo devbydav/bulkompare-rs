@@ -98,7 +98,11 @@ impl CsvSet {
         println!("Reading header for {:?}", path);
         let mut rdr = self.csv_reader(path)?;
 
-        let header = rdr.records().nth(self.header).unwrap()?;
+        let header = rdr
+            .records()
+            .nth(self.header)
+            .context("Ligne header absente")??;
+
         Ok(header)
     }
 
@@ -109,7 +113,10 @@ impl CsvSet {
 
         for path in files {
             let mut reader = self.csv_reader(&path)?;
-            let header = reader.records().nth(self.header).unwrap()?;
+            let header = reader
+                .records()
+                .nth(self.header)
+                .context("Ligne header absente")??;
 
             // Get the column indices in this file
             let index_indices: Vec<usize> = cols

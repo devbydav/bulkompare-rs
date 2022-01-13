@@ -1,7 +1,17 @@
 import React, {useState, useEffect} from "react";
 
-import {Button, Divider, Grid, Stack} from "@mui/material";
-
+import {
+    Button,
+    ButtonGroup,
+    IconButton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableRow
+} from "@mui/material";
+import ClearIcon from '@mui/icons-material/Clear';
 
 function ColumnSelection({comparator, selectedExt, handleSave}) {
 
@@ -44,51 +54,75 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
 
     }
 
+    const clearColSelection = colName => {
+        setCsvCols(prevState => {
+            const newCsvColumns = [...prevState];
+            const index = newCsvColumns.findIndex(val => val.name === colName);
+            newCsvColumns[index] = {name: colName, index: false, compare: false, display: false};
+            return newCsvColumns;
+        })
+
+    }
+
+    const selected = {
+        // color: "primary",
+        variant: "contained"
+    }
+    const notSelected = {
+        // color: "secondary",
+        variant: "outlined"
+    }
+
     return (
-        <Stack direction="column" spacing={2}>
+        <Stack direction="column" spacing={2} alignItems="center">
             <Button onClick={() => handleSave(csvCols)}>Valider</Button>
-            <Grid container spacing={2}>
 
-                {csvCols.map((csvCol, i) => (
-                    <React.Fragment key={i}>
-                        <Divider style={{width: '100%'}}/>
-                        <Grid container item xs={12} spacing={3}>
-                            <Grid item xs={4}>
-                                <p>{csvCol.name}</p>
-                            </Grid>
+        <TableContainer sx={{minWidth: 650, maxWidth:900}}>
+            <Table  size="small" aria-label="simple table">
+                <TableBody >
+                    {csvCols.map((csvCol, i) => (
+                        <TableRow
+                            key={i}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                        >
+                            <TableCell component="th" scope="row">
+                                {csvCol.name}
+                            </TableCell>
+                            <TableCell align="center">
+                                <ButtonGroup disableElevation color="primary">
+                                    <Button
+                                        onClick={() => handleToggleSelection(csvCol.name, "index")}
+                                        {...(csvCol.index ? selected : notSelected)}
+                                    >
+                                        Clé
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleToggleSelection(csvCol.name, "compare")}
+                                        {...(csvCol.compare ? selected : notSelected)}
+                                    >Comparer
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleToggleSelection(csvCol.name, "display")}
+                                        {...(csvCol.display ? selected : notSelected)}
+                                    >
+                                        Afficher
+                                    </Button>
+                                </ButtonGroup>
+                                <IconButton
+                                    onClick={() => clearColSelection(csvCol.name)}
+                                    aria-label="clear"
+                                    size="small"
+                                >
+                                    <ClearIcon fontSize="inherit" />
+                                </IconButton>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
+</Stack>
 
-                            <Grid item xs={2}>
-                                <Button
-                                    variant={csvCol.index ? "contained" : "outlined"}
-                                    color={csvCol.index ? "success" : "secondary"}
-                                    onClick={() => handleToggleSelection(csvCol.name, "index")}>
-                                    {csvCol.index ? "OUI" : "NON"}
-                                </Button>
-
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button
-                                    variant={csvCol.compare ? "contained" : "outlined"}
-                                    color={csvCol.compare ? "success" : "secondary"}
-                                    onClick={() => handleToggleSelection(csvCol.name, "compare")}>
-                                    {csvCol.compare ? "OUI" : "NON"}
-                                </Button>
-                            </Grid>
-                            <Grid item xs={2}>
-                                <Button
-                                    variant={csvCol.display ? "contained" : "outlined"}
-                                    color={csvCol.display ? "success" : "secondary"}
-                                    onClick={() => handleToggleSelection(csvCol.name, "display")}>
-                                    {csvCol.display ? "OUI" : "NON"}
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </React.Fragment>
-
-                ))}
-
-            </Grid>
-        </Stack>
     );
 }
 

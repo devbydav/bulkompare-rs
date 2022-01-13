@@ -139,15 +139,15 @@ impl CsvSet {
                 lines.push(Line {
                     index: index_indices
                         .iter()
-                        .map(|i| record.get(*i).unwrap().to_string())
+                        .map(|i| record.get(*i).unwrap_or("").to_string())
                         .collect(),
                     compare: compare_indices
                         .iter()
-                        .map(|i| record.get(*i).unwrap().to_string())
+                        .map(|i| record.get(*i).unwrap_or("").to_string())
                         .collect(),
                     display: display_indices
                         .iter()
-                        .map(|i| record.get(*i).unwrap().to_string())
+                        .map(|i| record.get(*i).unwrap_or("").to_string())
                         .collect(),
                     result: Comparison::None,
                 });

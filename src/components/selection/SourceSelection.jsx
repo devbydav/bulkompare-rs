@@ -5,7 +5,6 @@ import AddIcon from '@mui/icons-material/Add';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import {
     Stack,
-    Button,
     TextField,
     List,
     ListItem,
@@ -20,6 +19,8 @@ import {
     FormControl
 } from '@mui/material';
 import {open} from "@tauri-apps/api/dialog";
+import TopBar from "../TopBar";
+import WorkSpace from "../WorkSpace";
 
 
 function SourceSelection({selection, handleSave}) {
@@ -93,98 +94,100 @@ function SourceSelection({selection, handleSave}) {
 
 
     return (
+        <>
+            <TopBar title="Sélection des sources" validate={() => handleSave(extensions, names, dirs)}/>
+            <WorkSpace>
+                <Stack direction="column" spacing={2} alignItems="center">
 
-        <Stack direction="column" spacing={2} alignItems="center">
-            <Button onClick={() => handleSave(extensions, names, dirs)}>Valider</Button>
+                    <Stack direction="row" spacing={5}>
+                        {names.map((name, i) => (
+                            <Stack direction="column" spacing={2} key={i}>
+                                <TextField
+                                    id={"Name" + i}
+                                    label="Nom"
+                                    variant="outlined"
+                                    value={name}
+                                    onChange={e => handleNameChange(i, e.target.value)}
+                                />
 
-
-            <Stack direction="row" spacing={5}>
-                {names.map((name, i) => (
-                    <Stack direction="column" spacing={2} key={i}>
-                        <TextField
-                            id={"Name" + i}
-                            label="Nom"
-                            variant="outlined"
-                            value={name}
-                            onChange={e => handleNameChange(i, e.target.value)}
-                        />
-
-                        <FormControl sx={{ m: 1, width: '50ch' }} variant="outlined">
-                            <InputLabel htmlFor={"Dir" + i}>Répertoire</InputLabel>
-                            <OutlinedInput
-                                id={"Dir" + i}
-                                type="text"
-                                value={dirs[i]}
-                                onChange={e => handleDirChange(i, e.target.value)}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() => handleDirOpen(i)}
-                                            onMouseDown={e=>e.preventDefault()}
-                                            edge="end"
-                                        >
-                                            <FolderOpenIcon/>
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                label="Répertoire"
-                            />
-                        </FormControl>
-
-                    </Stack>
-                ))}
-            </Stack>
-
-
-            <Divider style={{width: '60%'}}>Extensions</Divider>
-            <Stack direction="row" spacing={1}>
-                <TextField
-                    size="small"
-                    id="AddExt"
-                    label="Nouvelle extension"
-                    variant="standard"
-                    value={addExtension}
-                    onChange={e => setAddExtension(e.target.value)}
-                />
-                <IconButton color="primary" onClick={handleAddExtension}>
-                    <AddIcon/>
-                </IconButton>
-            </Stack>
-
-
-            <Container maxWidth="xs">
-                <Card>
-                    <List dense={true}>
-                        {extensions.map((ext, i) => (
-                                <ListItem
-                                    key={i}
-                                    secondaryAction={
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => handleRemoveExtension(ext)}
-                                        >
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    }
-                                >
-                                    {/*<ListItemAvatar>*/}
-                                    {/*    <Avatar>*/}
-                                    {/*        <FolderIcon/>*/}
-                                    {/*    </Avatar>*/}
-                                    {/*</ListItemAvatar>*/}
-                                    <ListItemText
-                                        primary={ext}
+                                <FormControl sx={{m: 1, width: '50ch'}} variant="outlined">
+                                    <InputLabel htmlFor={"Dir" + i}>Répertoire</InputLabel>
+                                    <OutlinedInput
+                                        id={"Dir" + i}
+                                        type="text"
+                                        value={dirs[i]}
+                                        onChange={e => handleDirChange(i, e.target.value)}
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={() => handleDirOpen(i)}
+                                                    onMouseDown={e => e.preventDefault()}
+                                                    edge="end"
+                                                >
+                                                    <FolderOpenIcon/>
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        label="Répertoire"
                                     />
-                                </ListItem>
-                            )
-                        )}
-                    </List>
-                </Card>
-            </Container>
+                                </FormControl>
 
-        </Stack>
+                            </Stack>
+                        ))}
+                    </Stack>
 
+
+                    <Divider style={{width: '60%'}}>Extensions</Divider>
+                    <Stack direction="row" spacing={1}>
+                        <TextField
+                            size="small"
+                            id="AddExt"
+                            label="Nouvelle extension"
+                            variant="standard"
+                            value={addExtension}
+                            onChange={e => setAddExtension(e.target.value)}
+                        />
+                        <IconButton color="primary" onClick={handleAddExtension}>
+                            <AddIcon/>
+                        </IconButton>
+                    </Stack>
+
+
+                    <Container maxWidth="xs">
+                        <Card>
+                            <List dense={true}>
+                                {extensions.map((ext, i) => (
+                                        <ListItem
+                                            key={i}
+                                            secondaryAction={
+                                                <IconButton
+                                                    edge="end"
+                                                    aria-label="delete"
+                                                    onClick={() => handleRemoveExtension(ext)}
+                                                >
+                                                    <DeleteIcon/>
+                                                </IconButton>
+                                            }
+                                        >
+                                            {/*<ListItemAvatar>*/}
+                                            {/*    <Avatar>*/}
+                                            {/*        <FolderIcon/>*/}
+                                            {/*    </Avatar>*/}
+                                            {/*</ListItemAvatar>*/}
+                                            <ListItemText
+                                                primary={ext}
+                                            />
+                                        </ListItem>
+                                    )
+                                )}
+                            </List>
+                        </Card>
+                    </Container>
+
+                </Stack>
+
+            </WorkSpace>
+        </>
     );
 }
 

@@ -19,7 +19,7 @@ const Steps = ({comparator}) => {
             onClick: () => navigate("/fileProperties"),
         },
         {
-            title: "Choix colonnes",
+            title: "Choisir colonnes",
             disabled: comparator.status < Status.ColsAvailable,
             completed: comparator.status > Status.ColsAvailable,
             isSelected: false,
@@ -29,7 +29,7 @@ const Steps = ({comparator}) => {
 
 
     return (
-        <Stepper nonLinear activeStep={1} sx={{ minWidth: 310 }}>
+        <Stepper orientation="vertical" nonLinear activeStep={1} sx={{ m: 2 }}>
             {steps.map(step => {
                 let buttonIcon;
                 if (step.disabled) {

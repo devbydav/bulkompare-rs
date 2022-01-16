@@ -17,11 +17,8 @@ const SuperSelect = ({selection, selectedExt, setSelectedIndex, otherComparators
 
     return (
         <Select
-            sx={{ minWidth: 120 }}
-            labelId="super-select-label"
-            id="super-select"
+            sx={{ ml: 2, mr: 2 }}
             value={selectedExt}
-            label="Ext"
             renderValue={selected => selected}
             onChange={handleChange}
             error={!otherComparatorsReady}

@@ -4,7 +4,6 @@ import {
     Button,
     ButtonGroup,
     IconButton,
-    Stack,
     Table,
     TableBody,
     TableCell,
@@ -12,6 +11,8 @@ import {
     TableRow
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
+import TopBar from "../TopBar";
+import WorkSpace from "../WorkSpace";
 
 function ColumnSelection({comparator, selectedExt, handleSave}) {
 
@@ -74,55 +75,55 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
     }
 
     return (
-        <Stack direction="column" spacing={2} alignItems="center">
-            <Button onClick={() => handleSave(csvCols)}>Valider</Button>
-
-        <TableContainer sx={{minWidth: 650, maxWidth:900}}>
-            <Table  size="small" aria-label="simple table">
-                <TableBody >
-                    {csvCols.map((csvCol, i) => (
-                        <TableRow
-                            key={i}
-                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                        >
-                            <TableCell component="th" scope="row">
-                                {csvCol.name}
-                            </TableCell>
-                            <TableCell align="center">
-                                <ButtonGroup disableElevation color="primary">
-                                    <Button
-                                        onClick={() => handleToggleSelection(csvCol.name, "index")}
-                                        {...(csvCol.index ? selected : notSelected)}
-                                    >
-                                        Clé
-                                    </Button>
-                                    <Button
-                                        onClick={() => handleToggleSelection(csvCol.name, "compare")}
-                                        {...(csvCol.compare ? selected : notSelected)}
-                                    >Comparer
-                                    </Button>
-                                    <Button
-                                        onClick={() => handleToggleSelection(csvCol.name, "display")}
-                                        {...(csvCol.display ? selected : notSelected)}
-                                    >
-                                        Afficher
-                                    </Button>
-                                </ButtonGroup>
-                                <IconButton
-                                    onClick={() => clearColSelection(csvCol.name)}
-                                    aria-label="clear"
-                                    size="small"
+        <>
+            <TopBar title="Sélection des colonnes" validate={() => handleSave(csvCols)}/>
+            <WorkSpace>
+                <TableContainer sx={{minWidth: 650, maxWidth: 900}}>
+                    <Table size="small" aria-label="simple table">
+                        <TableBody>
+                            {csvCols.map((csvCol, i) => (
+                                <TableRow
+                                    key={i}
+                                    sx={{'&:last-child td, &:last-child th': {border: 0}}}
                                 >
-                                    <ClearIcon fontSize="inherit" />
-                                </IconButton>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
-</Stack>
-
+                                    <TableCell component="th" scope="row">
+                                        {csvCol.name}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <ButtonGroup disableElevation color="primary">
+                                            <Button
+                                                onClick={() => handleToggleSelection(csvCol.name, "index")}
+                                                {...(csvCol.index ? selected : notSelected)}
+                                            >
+                                                Clé
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleToggleSelection(csvCol.name, "compare")}
+                                                {...(csvCol.compare ? selected : notSelected)}
+                                            >Comparer
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleToggleSelection(csvCol.name, "display")}
+                                                {...(csvCol.display ? selected : notSelected)}
+                                            >
+                                                Afficher
+                                            </Button>
+                                        </ButtonGroup>
+                                        <IconButton
+                                            onClick={() => clearColSelection(csvCol.name)}
+                                            aria-label="clear"
+                                            size="small"
+                                        >
+                                            <ClearIcon fontSize="inherit"/>
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </WorkSpace>
+        </>
     );
 }
 

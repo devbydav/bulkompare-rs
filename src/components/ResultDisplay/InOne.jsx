@@ -53,8 +53,8 @@ function InOne({comparisonResult, showToast}) {
                                                     <Table sx={{ minWidth: 650 }} aria-label="in one table">
                                                         <TableHead>
                                                             <TableRow>
-                                                                {comparatorResult.display_cols.map(col => (
-                                                                    <TableCell>{col}</TableCell>
+                                                                {comparatorResult.display_cols.map((col, i) => (
+                                                                    <TableCell key={i}>{col}</TableCell>
                                                                 ))}
                                                                 <TableCell>Action</TableCell>
                                                             </TableRow>

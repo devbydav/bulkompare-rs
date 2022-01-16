@@ -2,16 +2,21 @@ import React, {useEffect, useState} from "react";
 import {invoke} from '@tauri-apps/api/tauri';
 import {useNavigate} from 'react-router-dom';
 import {Route, Routes} from "react-router-dom";
-import {Snackbar, Stack} from '@mui/material';
+import {
+    Box,
+    CssBaseline,
+    Snackbar,
+} from '@mui/material';
 
 import storkLogoAnimated from './resources/images/stork_animated.svg';
 import storkLogo from './resources/images/stork.svg';
 import './App.css';
-import NavBar from "./components/NavBar/NavBar";
 import SourceSelection from "./components/selection/SourceSelection";
 import FileProperties from "./components/selection/FileProperties";
 import ColumnSelection from "./components/selection/ColumnSelection";
 import ResultDisplay from "./components/ResultDisplay/ResultDisplay";
+import LeftDrawer from "./components/NavBar/LeftDrawer";
+import StdMain from "./components/StdMain";
 import {Alert} from "@mui/lab";
 
 import {defaultComparator, defaultSelection} from "./constants/defaults"
@@ -193,22 +198,26 @@ function App() {
 
 
     return (
-
         <div className="App">
-            <Stack>
-                <NavBar
+            <Box sx={{ display: 'flex' }}>
+                <CssBaseline />
+                <LeftDrawer
                     selection={selection}
                     setSelection={setSelection}
                     comparator={selectedComparator}
                     selectedExt={selectedExt}
                     setSelectedIndex={setSelectedIndex}
+                    comparisonResult={comparisonResult}
                     handleCompare={handleCompare}
                     showToast={showToast}
                 />
+
                 {comparing ?
                     <div>
-                        <p>Comparing ...</p>
-                        <img src={storkLogoAnimated} className="Stork-logo" alt="logo"/>
+                        <StdMain>
+                            <p>Comparaison en cours ...</p>
+                            <img src={storkLogoAnimated} className="Stork-logo" alt="logo"/>
+                        </StdMain>
                     </div>
                     :
                     <Routes>
@@ -217,6 +226,7 @@ function App() {
                                 selection={selection}
                                 handleSave={handleSourceSelectionSave}
                             />
+
                         }>
                         </Route>
 
@@ -246,10 +256,15 @@ function App() {
                         }>
                         </Route>
 
-                        <Route path="/" element={<img src={storkLogo} className="Stork-logo" alt="logo"/>} />
+                        <Route path="/" element={
+                            <StdMain>
+                                <img src={storkLogo} className="Stork-logo" alt="logo"/>
+                            </StdMain>
+                        }/>
 
                     </Routes>
                 }
+
                 {snackbarConfig ?
                     <Snackbar
                         open={!!snackbarConfig.msg}
@@ -267,9 +282,7 @@ function App() {
                     :
                     null
                 }
-
-            </Stack>
-
+            </Box>
         </div>
     );
 }

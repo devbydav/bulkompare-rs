@@ -213,12 +213,10 @@ function App() {
                 />
 
                 {comparing ?
-                    <div>
                         <StdMain>
                             <p>Comparaison en cours ...</p>
                             <img src={storkLogoAnimated} className="Stork-logo" alt="logo"/>
                         </StdMain>
-                    </div>
                     :
                     <Routes>
                         <Route path="/source" element={

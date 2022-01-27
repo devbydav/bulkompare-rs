@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use anyhow::{bail, ensure, Context, Result};
@@ -8,24 +9,22 @@ use crate::csv_set::CsvSet;
 use crate::helpers::{Columns, Comparison, Files, Line, Status};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DifferentLine {
-    index: String,
-    display_values: Vec<String>,
-    differences: Vec<Difference>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct Difference {
-    col: String,
-    left: String,
-    right: String,
+    id: usize,
+    _rowkey: String,
+    _col: String,
+    _from: String,
+    _to: String,
+
+    #[serde(flatten)]
+    display: HashMap<String, String>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct ComparatorResult {
     in_one: Vec<Vec<Vec<String>>>,
     not_compared: String,
-    differences: Vec<DifferentLine>,
+    differences: Vec<Difference>,
     display_cols: Vec<String>,
 }
 
@@ -219,12 +218,8 @@ impl Comparator {
             match line_left.index.cmp(&line_right.index) {
                 Ordering::Equal => {
                     // Found unique index match (duplicated are skipped) -> compare
-                    if check_values_are_identical(
-                        &self.compare_cols,
-                        line_left,
-                        line_right,
-                        &mut differences,
-                    ) {
+                    if check_values_are_identical(&columns, line_left, line_right, &mut differences)
+                    {
                         line_left.result = Comparison::Identical;
                         line_right.result = Comparison::Identical;
                     } else {
@@ -315,39 +310,32 @@ impl Comparator {
 }
 
 fn check_values_are_identical(
-    compare_cols: &[String],
+    columns: &Columns,
     left: &mut Line,
     right: &mut Line,
-    differences: &mut Vec<DifferentLine>,
+    differences: &mut Vec<Difference>,
 ) -> bool {
     let mut identical = true;
-    let mut different_line = None;
 
     for (i, (left_val, right_val)) in left.compare.iter().zip(&right.compare).enumerate() {
         if left_val != right_val {
+            let display_hm: HashMap<_, _> = columns
+                .display
+                .iter()
+                .zip(&left.display)
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect();
+
+            differences.push(Difference {
+                id: differences.len(),
+                _rowkey: left.index.join("-"),
+                _col: columns.compare[i].clone(),
+                _from: left_val.clone(),
+                _to: right_val.clone(),
+                display: display_hm,
+            });
             identical = false;
-            if different_line.is_none() {
-                different_line = Some(DifferentLine {
-                    index: left.index.join("-"),
-                    display_values: left.display.clone(),
-                    differences: vec![],
-                })
-            }
-
-            different_line
-                .as_mut()
-                .unwrap()
-                .differences
-                .push(Difference {
-                    col: compare_cols[i].clone(),
-                    left: left_val.clone(),
-                    right: right_val.clone(),
-                });
         }
-    }
-
-    if let Some(different_line) = different_line {
-        differences.push(different_line);
     }
     identical
 }

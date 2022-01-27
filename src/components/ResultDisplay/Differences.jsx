@@ -1,75 +1,35 @@
 import React from "react";
-import {invoke} from '@tauri-apps/api/tauri';
-import {TreeItem, TreeView} from "@mui/lab";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import {Button} from "@mui/material";
+import { DataGrid } from '@mui/x-data-grid';
+import {useParams} from "react-router-dom";
 
 
 function Differences({comparisonResult, showToast}) {
+    const {ext} = useParams();
+    console.log("Differences for", ext)
+    const rows = comparisonResult[ext].differences;
 
-    const handleLeafAction = (ext, index) => {
+    if (!rows) return <p>ERROR</p>
+    if (rows.length === 0) return <p>NO DIFF</p>
 
-        const displayColsNames = comparisonResult[ext].display_cols;
-        const displayColsValues = comparisonResult[ext].differences.find(line => line.index === index).display_values;
+    const columnsDisplay = Object.keys(rows[0]).filter(c => !(c.startsWith("_") || c === "id" ));
 
-        const args = {
-            colNames: displayColsNames,
-            colValues: displayColsValues,
-            fileExtension: ext
-        };
+    const columns = [
+        { field: "_rowkey", headerName: "Clé", minWidth: 180, flex: 1},
+        { field: "_col", headerName: "Colonne", minWidth: 150, flex: 1},
+        { field: "_from", headerName: "De", minWidth: 150, flex: 1},
+        { field: "_to", headerName: "A", minWidth: 150, flex: 1},
+    ];
 
-        invoke("on_click_result_leaf", args)
-            .then(info => {
-                // display toast only if a non-empty string was returned
-                if (info) {
-                    showToast(info)
-                }
-            })
-            .catch(e => showToast(e, false))
-    }
+    columns.push(...columnsDisplay.map(c => ({field: c, minWidth: 100, flex: 1})))
+
 
     return (
 
-        <TreeView
-            aria-label="file system navigator"
-            defaultCollapseIcon={<ExpandMoreIcon/>}
-            defaultExpandIcon={<ChevronRightIcon/>}
-        >
-            {Object.entries(comparisonResult).map(([ext, comparatorResult], b) => (
-                    <TreeItem nodeId={ext} key={ext} label={ext}>
-
-                        {comparatorResult.differences.map(differentLine => {
-                            const id = `${ext}/${differentLine.index}`;
-                            return (
-                                <TreeItem
-                                    nodeId={id}
-                                    key={id}
-                                    label={differentLine.index}>
-
-                                    {differentLine.differences.map(difference => {
-                                        const leafId = `${id}/${difference.col}`;
-                                        return (
-                                            <TreeItem
-                                                nodeId={leafId}
-                                                key={leafId}
-                                                label={<>
-                                                    {difference.col + ": '" + difference.left + "' - > '" + difference.right + "'"}
-                                                    <Button onClick={() => handleLeafAction(ext, differentLine.index)}>
-                                                        GO
-                                                    </Button>
-                                                </>}
-                                            />
-                                        )
-                                    })}
-                                </TreeItem>
-                            )
-                        })}
-                    </TreeItem>
-                )
-            )}
-
-        </TreeView>
+        <div style={{ display: 'flex', height: '100%', width: '100%' }}>
+            <div style={{ flexGrow: 1 }}>
+            <DataGrid checkboxSelection rows={rows} columns={columns} />
+            </div>
+        </div>
 
     );
 }

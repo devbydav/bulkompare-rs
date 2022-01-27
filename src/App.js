@@ -186,7 +186,7 @@ function App() {
                 } else {
                     showToast("Comparaison terminée");
                 }
-                navigate("/resultDisplay");
+                navigate("/results/summary");
                 setComparisonResult(c);
                 setComparing(false);
             })
@@ -198,90 +198,89 @@ function App() {
 
 
     return (
-        <div className="App">
-            <Box sx={{ display: 'flex' }}>
-                <CssBaseline />
-                <LeftDrawer
-                    selection={selection}
-                    setSelection={setSelection}
-                    comparator={selectedComparator}
-                    selectedExt={selectedExt}
-                    setSelectedIndex={setSelectedIndex}
-                    comparisonResult={comparisonResult}
-                    handleCompare={handleCompare}
-                    showToast={showToast}
-                />
+        <Box className="App" sx={{ display: 'flex' }}>
+            <CssBaseline />
+            <LeftDrawer
+                selection={selection}
+                setSelection={setSelection}
+                comparator={selectedComparator}
+                selectedExt={selectedExt}
+                setSelectedIndex={setSelectedIndex}
+                comparisonResult={comparisonResult}
+                handleCompare={handleCompare}
+                showToast={showToast}
+            />
 
-                {comparing ?
+            {comparing ?
+                    <StdMain>
+                        <p>Comparaison en cours ...</p>
+                        <img src={storkLogoAnimated} className="Stork-logo" alt="logo"/>
+                    </StdMain>
+                :
+                <Routes>
+                    <Route path="/source" element={
+                        <SourceSelection
+                            selection={selection}
+                            handleSave={handleSourceSelectionSave}
+                        />
+
+                    }>
+                    </Route>
+
+                    <Route path="/fileProperties" element={
+                        <FileProperties
+                            fileProperties={selectedComparator?.csv_sets}
+                            selectedExt={selectedExt}
+                            handleSave={handleFilePropertiesSave}
+                        />
+                    }>
+
+                    </Route>
+                    <Route path="/columnSelection" element={
+                        <ColumnSelection
+                            comparator={selectedComparator}
+                            selectedExt={selectedExt}
+                            handleSave={handleColumnsSelectionSave}
+                        />
+                    }>
+                    </Route>
+
+                    <Route path="results/*" element={
+                        comparisonResult ?
+                            <ResultDisplay comparisonResult={comparisonResult} showToast={showToast}/>
+                            :
+                            null
+                    }>
+                    </Route>
+
+                    <Route path="/" element={
                         <StdMain>
-                            <p>Comparaison en cours ...</p>
-                            <img src={storkLogoAnimated} className="Stork-logo" alt="logo"/>
+                            <img src={storkLogo} className="Stork-logo" alt="logo"/>
                         </StdMain>
-                    :
-                    <Routes>
-                        <Route path="/source" element={
-                            <SourceSelection
-                                selection={selection}
-                                handleSave={handleSourceSelectionSave}
-                            />
+                    }/>
 
-                        }>
-                        </Route>
+                </Routes>
+            }
 
-                        <Route path="/fileProperties" element={
-                            <FileProperties
-                                fileProperties={selectedComparator?.csv_sets}
-                                selectedExt={selectedExt}
-                                handleSave={handleFilePropertiesSave}
-                            />
-                        }>
-
-                        </Route>
-                        <Route path="/columnSelection" element={
-                            <ColumnSelection
-                                comparator={selectedComparator}
-                                selectedExt={selectedExt}
-                                handleSave={handleColumnsSelectionSave}
-                            />
-                        }>
-                        </Route>
-
-                        <Route path="/resultDisplay" element={
-                            comparisonResult ?
-                                <ResultDisplay comparisonResult={comparisonResult} showToast={showToast}/>
-                                :
-                                null
-                        }>
-                        </Route>
-
-                        <Route path="/" element={
-                            <StdMain>
-                                <img src={storkLogo} className="Stork-logo" alt="logo"/>
-                            </StdMain>
-                        }/>
-
-                    </Routes>
-                }
-
-                {snackbarConfig ?
-                    <Snackbar
-                        open={!!snackbarConfig.msg}
-                        autoHideDuration={snackbarConfig.duration}
+            {snackbarConfig ?
+                <Snackbar
+                    open={!!snackbarConfig.msg}
+                    autoHideDuration={snackbarConfig.duration}
+                    onClose={handleSnackbarClose}
+                >
+                    <Alert
                         onClose={handleSnackbarClose}
+                        severity={snackbarConfig.severity}
+                        sx={{width: '100%'}}
                     >
-                        <Alert
-                            onClose={handleSnackbarClose}
-                            severity={snackbarConfig.severity}
-                            sx={{width: '100%'}}
-                        >
-                            {snackbarConfig.msg}
-                        </Alert>
-                    </Snackbar>
-                    :
-                    null
-                }
-            </Box>
-        </div>
+                        {snackbarConfig.msg}
+                    </Alert>
+                </Snackbar>
+                :
+                null
+            }
+        </Box>
+
     );
 }
 

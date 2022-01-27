@@ -174,11 +174,7 @@ const LeftDrawer = ({selection, setSelection, comparator, selectedExt, setSelect
                 />
                 :
                 <ResultControl
-                    selection={selection}
-                    selectedExt={selectedExt}
-                    setSelectedIndex={setSelectedIndex}
-                    comparator={comparator}
-                    handleCompare={handleCompare}
+                    comparisonResult={comparisonResult}
                 />
             }
         </Drawer>

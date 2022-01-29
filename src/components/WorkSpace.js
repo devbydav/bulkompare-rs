@@ -8,7 +8,7 @@ function WorkSpace(props) {
     return (
         <Box
             component="main"
-            position="fixed"
+            position="absolute"
             sx={{width: `calc(100% - ${drawerWidth}px)`,
                 ml: `${drawerWidth}px`,
                 height: `calc(100% - ${topbarHeight}px)`,

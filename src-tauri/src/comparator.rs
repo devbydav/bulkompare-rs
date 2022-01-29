@@ -9,6 +9,12 @@ use crate::csv_set::CsvSet;
 use crate::helpers::{Columns, Comparison, Files, Line, Status};
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct Summary {
+    diffs: usize,
+    in_one: (usize, usize),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Difference {
     id: usize,
     _rowkey: String,
@@ -22,7 +28,8 @@ pub struct Difference {
 
 #[derive(Debug, Serialize)]
 pub struct ComparatorResult {
-    in_one: Vec<Vec<Vec<String>>>,
+    summary: Summary,
+    in_one: Vec<HashMap<String, String>>,
     not_compared: String,
     differences: Vec<Difference>,
     display_cols: Vec<String>,
@@ -278,29 +285,44 @@ impl Comparator {
         let in_one_left: Vec<_> = self
             .lines_left
             .iter()
-            .filter_map(|l| {
-                if l.result == Comparison::InOneOnly {
-                    Some(l.display.clone())
-                } else {
-                    None
-                }
-            })
+            .filter(|l| l.result == Comparison::InOneOnly)
             .collect();
 
         let in_one_right: Vec<_> = self
             .lines_right
             .iter()
-            .filter_map(|l| {
-                if l.result == Comparison::InOneOnly {
-                    Some(l.display.clone())
-                } else {
-                    None
-                }
+            .filter(|l| l.result == Comparison::InOneOnly)
+            .collect();
+
+        let in_one_left_it = in_one_left.iter().map(|l| ("1", l));
+
+        let in_one_right_it = in_one_right.iter().map(|l| ("2", l));
+
+        let in_one: Vec<_> = in_one_left_it
+            .chain(in_one_right_it)
+            .enumerate()
+            .map(|(i, (name, line))| {
+                let mut hm: HashMap<_, _> = columns
+                    .display
+                    .iter()
+                    .zip(&line.display)
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect();
+
+                hm.insert("id".to_string(), i.to_string());
+                hm.insert("set".to_string(), name.to_string());
+                hm
             })
             .collect();
 
+        let summary = Summary {
+            diffs: differences.len(),
+            in_one: (in_one_left.len(), in_one_right.len()),
+        };
+
         let r = ComparatorResult {
-            in_one: vec![in_one_left, in_one_right],
+            summary,
+            in_one,
             not_compared: "".to_string(),
             differences,
             display_cols: self.display_cols.clone(),

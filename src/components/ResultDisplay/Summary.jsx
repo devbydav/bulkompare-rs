@@ -34,9 +34,9 @@ function Summary({comparisonResult}) {
                                     <TableCell component="th" scope="row">
                                         {extension}
                                     </TableCell>
-                                    <TableCell align="right">{comparatorResult.differences.length}</TableCell>
-                                    <TableCell align="right">{comparatorResult.in_one[0].length}</TableCell>
-                                    <TableCell align="right">{comparatorResult.in_one[1].length}</TableCell>
+                                    <TableCell align="right">{comparatorResult.summary.diffs}</TableCell>
+                                    <TableCell align="right">{comparatorResult.summary.in_one[0]}</TableCell>
+                                    <TableCell align="right">{comparatorResult.summary.in_one[1]}</TableCell>
                                 </TableRow>
                             )
 

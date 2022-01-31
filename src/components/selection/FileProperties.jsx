@@ -58,7 +58,7 @@ function FileProperties({fileProperties, selectedExt, handleSave}) {
     }
     return (
         <>
-            <TopBar title="Propriétés des fichiers" validate={() => handleSave(csvSets)}/>
+            <TopBar title="Propriétés des fichiers" btnAction={() => handleSave(csvSets)}/>
             <WorkSpace>
                 <Stack direction="row" justifyContent="space-around">
                     {fileProperties.map((fp, i) => (

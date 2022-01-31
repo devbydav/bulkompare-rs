@@ -75,7 +75,7 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
 
     return (
         <>
-            <TopBar title={ext + ": " + title} validate={handleAction}/>
+            <TopBar title={ext + ": " + title} btnAction={handleAction} btnText="Visualiser"/>
             <WorkSpace>
 
                 <Box display="flex" justifyContent="center"

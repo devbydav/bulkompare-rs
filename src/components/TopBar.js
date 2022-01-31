@@ -7,7 +7,7 @@ import {
 
 const drawerWidth = 240;
 
-function TopBar({title, validate}) {
+function TopBar({title, btnAction, btnText}) {
 
     return (
         <>
@@ -21,13 +21,12 @@ function TopBar({title, validate}) {
                         {title}
                     </Typography>
 
-                    {validate &&
-                        <Button color="inherit" variant={"outlined"} onClick={validate} >Valider</Button>
+                    {btnAction &&
+                        <Button color="inherit" variant={"outlined"} onClick={btnAction} >{btnText|| "Valider"}</Button>
                     }
 
                 </Toolbar>
             </AppBar>
-
 
         </>
     );

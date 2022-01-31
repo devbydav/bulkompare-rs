@@ -95,7 +95,7 @@ function SourceSelection({selection, handleSave}) {
 
     return (
         <>
-            <TopBar title="Sélection des sources" validate={() => handleSave(extensions, names, dirs)}/>
+            <TopBar title="Sélection des sources" btnAction={() => handleSave(extensions, names, dirs)}/>
             <WorkSpace>
                 <Stack direction="column" spacing={2} alignItems="center">
 

@@ -76,7 +76,7 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
 
     return (
         <>
-            <TopBar title="Sélection des colonnes" validate={() => handleSave(csvCols)}/>
+            <TopBar title="Sélection des colonnes" btnAction={() => handleSave(csvCols)}/>
             <WorkSpace>
                 <TableContainer sx={{minWidth: 650, maxWidth: 900}}>
                     <Table size="small" aria-label="simple table">

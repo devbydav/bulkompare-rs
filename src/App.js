@@ -14,13 +14,14 @@ import './App.css';
 import SourceSelection from "./components/selection/SourceSelection";
 import FileProperties from "./components/selection/FileProperties";
 import ColumnSelection from "./components/selection/ColumnSelection";
-import ResultDisplay from "./components/ResultDisplay/ResultDisplay";
 import LeftDrawer from "./components/NavBar/LeftDrawer";
 import StdMain from "./components/StdMain";
 import {Alert} from "@mui/lab";
 
 import {defaultComparator, defaultSelection} from "./constants/defaults"
 import {Status} from "./constants/constants";
+import SummaryDisplay from "./components/ResultDisplay/SummaryDisplay";
+import ByExtResultDisplay from "./components/ResultDisplay/ByExtResultDisplay";
 
 
 function App() {
@@ -247,17 +248,22 @@ function App() {
                     }>
                     </Route>
 
-                    <Route path="results/*" element={
+                    {
                         comparisonResult ?
-                            <ResultDisplay
-                                comparisonResult={comparisonResult}
-                                selectedExt={selectedExt}
-                                showToast={showToast}
-                            />
+                            <Route path="results" >
+                                <Route path="summary" element={
+                                    <SummaryDisplay comparisonResult={comparisonResult}  showToast={showToast} />
+                                }/>
+
+                                <Route path="*" element={
+                                    <ByExtResultDisplay comparisonResult={comparisonResult} ext={selectedExt} showToast={showToast}/>
+                                }/>
+                            </Route>
                             :
                             null
-                    }>
-                    </Route>
+                    }
+
+
 
                     <Route path="/" element={
                         <StdMain>

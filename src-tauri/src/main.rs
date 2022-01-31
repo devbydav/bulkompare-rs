@@ -50,7 +50,7 @@ fn main() {
             compare,
             open_selection,
             save_selection,
-            on_click_result_leaf,
+            handle_result_action,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -148,22 +148,20 @@ fn save_selection(path: PathBuf, mut selection: Selection) -> Result<(), StringE
 }
 
 #[tauri::command]
-fn on_click_result_leaf(
-    col_names: Vec<String>,
-    col_values: Vec<String>,
+fn handle_result_action(
+    values: Vec<HashMap<String, String>>,
     file_extension: String,
 ) -> Result<String, StringError> {
     println!("-> click_result_leaf");
 
     #[cfg(feature = "bulkompare-custom")]
     {
-        bulkompare_custom::custom_on_click_result_leaf(col_names, col_values, file_extension)
-            .map_err(|e| e.into())
+        bulkompare_custom::custom_on_click_result_leaf(file_extension, values).map_err(|e| e.into())
     }
 
     #[cfg(not(feature = "bulkompare-custom"))]
     {
-        println!("{}\n{:?}\n{:?}", file_extension, col_names, col_values);
+        println!("{}\n{:?}", file_extension, values);
         Ok("".to_string())
     }
 }

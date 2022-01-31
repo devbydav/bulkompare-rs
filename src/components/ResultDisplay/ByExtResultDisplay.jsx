@@ -1,28 +1,81 @@
-import {useState} from "react";
+import React, {useState} from "react";
 import {Box, Tabs, Tab} from "@mui/material";
-import Differences from "./Differences";
-import InOne from "./InOne";
 import TopBar from "../TopBar";
 import WorkSpace from "../WorkSpace";
+import {invoke} from "@tauri-apps/api";
+import ResultDataGrid from "./ResultDataGrid";
 
 
 function ByExtResultDisplay({comparisonResult, ext, showToast}) {
-
     console.log("-> Rendering ByExtResultDisplay for", ext);
 
     const [selectedTabIndex, setselectedTabIndex] = useState(0);
+    const [selectionModels, setSelectionModels] = useState([[],[]]);
 
     const handleTabChange = (event, newIndex) => {
         setselectedTabIndex(newIndex);
     };
 
-    const title = (selectedTabIndex === 0 ?
-        `différences détectées dans les colonnes comparées` :
-        `données dans un seul set de fichiers`);
+    const handleUpdateSelectionModel = newSelectionModel => {
+        setSelectionModels(prevSelectionModels => {
+            const newSelectionModels = [...prevSelectionModels];
+            newSelectionModels[selectedTabIndex] = newSelectionModel;
+            return newSelectionModels;
+        });
+    };
+
+    let title, rows, columns
+    if (selectedTabIndex === 0) {
+        title = "différences détectées dans les colonnes comparées";
+        rows = comparisonResult[ext]?.differences;
+
+        const columnsDisplay = Object.keys(rows[0])
+            .filter(c => !(c.startsWith("_") || c === "id" ))
+            .map(c => ({field: c, minWidth: 100, flex: 1}));
+        columns = [
+            { field: "_rowkey", headerName: "Clé", minWidth: 180, flex: 1},
+            { field: "_col", headerName: "Colonne", minWidth: 150, flex: 1},
+            { field: "_from", headerName: "De", minWidth: 150, flex: 1},
+            { field: "_to", headerName: "A", minWidth: 150, flex: 1},
+        ];
+        columns.push(...columnsDisplay);
+
+    } else {
+        title = "données dans un seul set de fichiers";
+
+        rows = comparisonResult[ext]?.in_one;
+
+        const columnsDisplay = Object.keys(rows[0])
+            .filter(c => c !== "id" && c !== "set")
+            .map(c => ({field: c, minWidth: 100, flex: 1}));
+        columns = [
+            { field: "set",  minWidth: 50, flex: 1},
+        ];
+        columns.push(...columnsDisplay)
+    }
+
+
+    const handleAction = () => {
+        const selectionModel = selectionModels[selectedTabIndex];
+        const values = selectionModel.map(i => ({...rows[i], id: ""}));
+
+        invoke("handle_result_action", {
+            fileExtension: ext,
+            values: values,
+        })
+            .then(info => {
+                // display toast only if a non-empty string was returned
+                if (info) {
+                    showToast(info)
+                }
+            })
+            .catch(e => showToast(e, false))
+    }
+
 
     return (
         <>
-            <TopBar title={ext + ": " + title}/>
+            <TopBar title={ext + ": " + title} validate={handleAction}/>
             <WorkSpace>
 
                 <Box display="flex" justifyContent="center"
@@ -38,21 +91,12 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
                     justifyContent="center"
                     sx={{height: "calc(100% - 35px)", p: 1}}
                 >
-                    {selectedTabIndex === 0 &&
-                        <Differences
-                            comparisonResult={comparisonResult}
-                            showToast={showToast}
-                            ext={ext}
-                        />
-                    }
-
-                    {selectedTabIndex === 1 &&
-                        <InOne
-                            comparisonResult={comparisonResult}
-                            showToast={showToast}
-                            ext={ext}
-                        />
-                    }
+                    <ResultDataGrid
+                        rows={rows}
+                        columns={columns}
+                        selectionModel={selectionModels[selectedTabIndex]}
+                        updateSelectionModel={handleUpdateSelectionModel}
+                    />
                 </Box>
 
             </WorkSpace>

@@ -8,7 +8,7 @@ import SuperSelect from "./SuperSelect";
 import {useNavigate} from "react-router-dom";
 
 
-const ConfigControl = ({selection, selectedExt, setSelectedIndex, comparator, handleCompare}) => {
+const ConfigControl = ({selection, selectedExt, setSelectedExt, comparator, handleCompare}) => {
     console.log("-> Rendering ConfigControl with", selectedExt);
 
     const navigate = useNavigate();
@@ -37,7 +37,7 @@ const ConfigControl = ({selection, selectedExt, setSelectedIndex, comparator, ha
             <SuperSelect
                 selection={selection}
                 selectedExt={selectedExt}
-                setSelectedIndex={setSelectedIndex}
+                setSelectedExt={setSelectedExt}
                 otherComparatorsReady={otherComparatorsReady}
             />
 

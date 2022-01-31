@@ -19,7 +19,7 @@ import ResultControl from "./ResultControl";
 
 const drawerWidth = 240;
 
-const LeftDrawer = ({selection, setSelection, comparator, selectedExt, setSelectedIndex, comparisonResult, handleCompare, showToast}) => {
+const LeftDrawer = ({selection, setSelection, comparator, selectedExt, setSelectedExt, comparisonResult, handleCompare, showToast}) => {
 
     const [configuring, setConfiguring] = useState(true);
 
@@ -168,13 +168,14 @@ const LeftDrawer = ({selection, setSelection, comparator, selectedExt, setSelect
                 <ConfigControl
                     selection={selection}
                     selectedExt={selectedExt}
-                    setSelectedIndex={setSelectedIndex}
+                    setSelectedExt={setSelectedExt}
                     comparator={comparator}
                     handleCompare={handleCompare}
                 />
                 :
                 <ResultControl
                     comparisonResult={comparisonResult}
+                    setSelectedExt={setSelectedExt}
                 />
             }
         </Drawer>

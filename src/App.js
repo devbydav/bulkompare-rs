@@ -29,18 +29,20 @@ function App() {
     const [comparing, setComparing] = useState(false);
     const [selection, setSelection] = useState(defaultSelection);
     const [comparisonResult, setComparisonResult] = useState(null);
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [selectedExt, setSelectedExt] = useState(null);
     const [snackbarConfig, setSnackbarConfig] = useState(null);
 
+    const selectedIndex = selection.comparators.findIndex(c => c.ext === selectedExt);
     const selectedComparator = selection.comparators[selectedIndex];
-    const selectedExt = selectedComparator?.ext ?? "";
 
     useEffect(() => {
+
         invoke('open_selection', {
             path: "config/default.json"
         })
             .then((newSelection) => {
                 setSelection(newSelection)
+                setSelectedExt(newSelection.comparators[0]?.ext)
             })
             .catch(e => showToast("Echec ouverture de la sélection par défaut: " + e, false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -205,7 +207,7 @@ function App() {
                 setSelection={setSelection}
                 comparator={selectedComparator}
                 selectedExt={selectedExt}
-                setSelectedIndex={setSelectedIndex}
+                setSelectedExt={setSelectedExt}
                 comparisonResult={comparisonResult}
                 handleCompare={handleCompare}
                 showToast={showToast}
@@ -247,7 +249,11 @@ function App() {
 
                     <Route path="results/*" element={
                         comparisonResult ?
-                            <ResultDisplay comparisonResult={comparisonResult} showToast={showToast}/>
+                            <ResultDisplay
+                                comparisonResult={comparisonResult}
+                                selectedExt={selectedExt}
+                                showToast={showToast}
+                            />
                             :
                             null
                     }>

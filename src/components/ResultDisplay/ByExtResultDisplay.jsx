@@ -1,18 +1,16 @@
-import React from "react";
+import {useState} from "react";
 import {Box, Tabs, Tab} from "@mui/material";
 import Differences from "./Differences";
 import InOne from "./InOne";
 import TopBar from "../TopBar";
 import WorkSpace from "../WorkSpace";
 
-import {useParams} from 'react-router-dom';
 
-function ByExtResultDisplay({comparisonResult, showToast}) {
+function ByExtResultDisplay({comparisonResult, ext, showToast}) {
 
-    const {ext} = useParams();
     console.log("-> Rendering ByExtResultDisplay for", ext);
 
-    const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
+    const [selectedTabIndex, setselectedTabIndex] = useState(0);
 
     const handleTabChange = (event, newIndex) => {
         setselectedTabIndex(newIndex);
@@ -52,6 +50,7 @@ function ByExtResultDisplay({comparisonResult, showToast}) {
                         <InOne
                             comparisonResult={comparisonResult}
                             showToast={showToast}
+                            ext={ext}
                         />
                     }
                 </Box>

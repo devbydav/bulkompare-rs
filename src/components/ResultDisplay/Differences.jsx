@@ -1,12 +1,11 @@
 import React from "react";
 import { DataGrid } from '@mui/x-data-grid';
-import {useParams} from "react-router-dom";
 
 
-function Differences({comparisonResult, showToast}) {
-    const {ext} = useParams();
+function Differences({comparisonResult, ext, showToast}) {
     console.log("Differences for", ext)
-    const rows = comparisonResult[ext].differences;
+
+    const rows = comparisonResult[ext]?.differences;
 
     if (!rows) return <p>ERROR</p>
     if (rows.length === 0) return <p>NO DIFF</p>

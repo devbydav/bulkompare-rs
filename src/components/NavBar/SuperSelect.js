@@ -6,13 +6,12 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import {Status} from "../../constants/constants";
 
 
-const SuperSelect = ({selection, selectedExt, setSelectedIndex, otherComparatorsReady}) => {
+const SuperSelect = ({selection, selectedExt, setSelectedExt, otherComparatorsReady}) => {
     console.log("-> Rendering SuperSelect with", selectedExt);
 
     const handleChange = (event) => {
-        const newExt = event.target.value;
-        const newIndex = selection.comparators.findIndex(c => c.ext === newExt);
-        setSelectedIndex(newIndex);
+        const ext = event.target.value;
+        setSelectedExt(ext);
     };
 
     return (

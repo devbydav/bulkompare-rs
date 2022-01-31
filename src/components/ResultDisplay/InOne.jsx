@@ -1,11 +1,10 @@
 import { DataGrid } from '@mui/x-data-grid';
-import {useParams} from "react-router-dom";
 
 
-function InOne({comparisonResult, showToast}) {
-    const {ext} = useParams();
+function InOne({comparisonResult, ext, showToast}) {
     console.log("InOne for", ext)
-    const rows = comparisonResult[ext].in_one;
+
+    const rows = comparisonResult[ext]?.in_one;
 
     if (!rows) return <p>ERROR</p>
     if (rows.length === 0) return <p>NO DIFF</p>

@@ -156,7 +156,7 @@ fn handle_result_action(
 
     #[cfg(feature = "bulkompare-custom")]
     {
-        bulkompare_custom::custom_on_click_result_leaf(file_extension, values).map_err(|e| e.into())
+        bulkompare_custom::handle_result_action(file_extension, values).map_err(|e| e.into())
     }
 
     #[cfg(not(feature = "bulkompare-custom"))]

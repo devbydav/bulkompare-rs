@@ -11,7 +11,8 @@ use crate::helpers::{Columns, Comparison, Files, Line, Status};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Summary {
     diffs: usize,
-    in_one: (usize, usize),
+    in_one: Vec<usize>,
+    not_compared: Vec<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -30,7 +31,7 @@ pub struct Difference {
 pub struct ComparatorResult {
     summary: Summary,
     in_one: Vec<HashMap<String, String>>,
-    not_compared: String,
+    not_compared: Vec<HashMap<String, String>>,
     differences: Vec<Difference>,
     display_cols: Vec<String>,
 }
@@ -282,48 +283,30 @@ impl Comparator {
             line.result = Comparison::InOneOnly
         }
 
-        let in_one_left: Vec<_> = self
-            .lines_left
-            .iter()
-            .filter(|l| l.result == Comparison::InOneOnly)
-            .collect();
+        let (in_one_result, in_one_counts) = build_result(
+            &self.lines_left,
+            &self.lines_right,
+            Comparison::InOneOnly,
+            &columns,
+        );
 
-        let in_one_right: Vec<_> = self
-            .lines_right
-            .iter()
-            .filter(|l| l.result == Comparison::InOneOnly)
-            .collect();
-
-        let in_one_left_it = in_one_left.iter().map(|l| ("1", l));
-
-        let in_one_right_it = in_one_right.iter().map(|l| ("2", l));
-
-        let in_one: Vec<_> = in_one_left_it
-            .chain(in_one_right_it)
-            .enumerate()
-            .map(|(i, (name, line))| {
-                let mut hm: HashMap<_, _> = columns
-                    .display
-                    .iter()
-                    .zip(&line.display)
-                    .map(|(k, v)| (k.clone(), v.clone()))
-                    .collect();
-
-                hm.insert("id".to_string(), i.to_string());
-                hm.insert("set".to_string(), name.to_string());
-                hm
-            })
-            .collect();
+        let (not_compared_result, not_compared_counts) = build_result(
+            &self.lines_left,
+            &self.lines_right,
+            Comparison::DuplicatedIndex,
+            &columns,
+        );
 
         let summary = Summary {
             diffs: differences.len(),
-            in_one: (in_one_left.len(), in_one_right.len()),
+            in_one: in_one_counts,
+            not_compared: not_compared_counts,
         };
 
         let r = ComparatorResult {
             summary,
-            in_one,
-            not_compared: "".to_string(),
+            in_one: in_one_result,
+            not_compared: not_compared_result,
             differences,
             display_cols: self.display_cols.clone(),
         };
@@ -360,6 +343,45 @@ fn check_values_are_identical(
         }
     }
     identical
+}
+
+fn build_result(
+    lines_left: &[Line],
+    lines_right: &[Line],
+    comparision: Comparison,
+    columns: &Columns,
+) -> (Vec<HashMap<String, String>>, Vec<usize>) {
+    let left = lines_left
+        .iter()
+        .filter(|l| l.result == comparision)
+        .map(|l| (0, l));
+
+    let right = lines_right
+        .iter()
+        .filter(|l| l.result == comparision)
+        .map(|l| (1, l));
+
+    let mut counts = vec![0, 0];
+
+    let result: Vec<_> = left
+        .chain(right)
+        .enumerate()
+        .map(|(i, (set_id, line))| {
+            counts[set_id] += 1;
+            let mut hm: HashMap<_, _> = columns
+                .display
+                .iter()
+                .zip(&line.display)
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect();
+
+            hm.insert("id".to_string(), i.to_string());
+            hm.insert("set".to_string(), set_id.to_string());
+            hm
+        })
+        .collect();
+
+    (result, counts)
 }
 
 #[cfg(test)]

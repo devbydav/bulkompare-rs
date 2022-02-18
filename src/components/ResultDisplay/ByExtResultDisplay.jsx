@@ -25,40 +25,62 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
     };
 
     let title, noDiffMessage, rows, columns
-    if (selectedTabIndex === 0) {
-        title = "différences détectées dans les colonnes comparées";
-        noDiffMessage = "Aucune différence !";
 
-        rows = comparisonResult[ext]?.differences;
+    switch (selectedTabIndex) {
+        case 0:
+            title = "différences détectées dans les colonnes comparées";
+            noDiffMessage = "Aucune différence !";
 
-        if (rows.length > 0) {
-            const columnsDisplay = Object.keys(rows[0])
-                .filter(c => !(c.startsWith("_") || c === "id" ))
-                .map(c => ({field: c, minWidth: 100, flex: 1}));
-            columns = [
-                { field: "_rowkey", headerName: "Clé", minWidth: 180, flex: 1},
-                { field: "_col", headerName: "Colonne", minWidth: 150, flex: 1},
-                { field: "_from", headerName: "De", minWidth: 150, flex: 1},
-                { field: "_to", headerName: "A", minWidth: 150, flex: 1},
-            ];
-            columns.push(...columnsDisplay);
-        }
+            rows = comparisonResult[ext]?.differences;
 
-    } else {
-        title = "données dans un seul set de fichiers";
-        noDiffMessage = "Aucune donnée dans un seul set !"
+            if (rows.length > 0) {
+                const columnsDisplay = Object.keys(rows[0])
+                    .filter(c => !(c.startsWith("_") || c === "id" ))
+                    .map(c => ({field: c, minWidth: 100, flex: 1}));
+                columns = [
+                    { field: "_rowkey", headerName: "Clé", minWidth: 180, flex: 1},
+                    { field: "_col", headerName: "Colonne", minWidth: 150, flex: 1},
+                    { field: "_from", headerName: "De", minWidth: 150, flex: 1},
+                    { field: "_to", headerName: "A", minWidth: 150, flex: 1},
+                ];
+                columns.push(...columnsDisplay);
+            }
+            break;
 
-        rows = comparisonResult[ext]?.in_one;
+        case 1:
+            title = "données dans un seul set de fichiers";
+            noDiffMessage = "Aucune donnée dans un seul set !"
 
-        if (rows.length > 0) {
-            const columnsDisplay = Object.keys(rows[0])
-                .filter(c => c !== "id" && c !== "set")
-                .map(c => ({field: c, minWidth: 100, flex: 1}));
-            columns = [
-                {field: "set", minWidth: 50, flex: 1},
-            ];
-            columns.push(...columnsDisplay);
-        }
+            rows = comparisonResult[ext]?.in_one;
+
+            if (rows.length > 0) {
+                const columnsDisplay = Object.keys(rows[0])
+                    .filter(c => c !== "id" && c !== "set")
+                    .map(c => ({field: c, minWidth: 100, flex: 1}));
+                columns = [
+                    {field: "set", minWidth: 50, flex: 1},
+                ];
+                columns.push(...columnsDisplay);
+            }
+            break;
+
+        case 2:
+            title = "données non comparées (plusieurs entrées pour une même clé dans un set)";
+            noDiffMessage = "Aucune  clé en double !"
+
+            rows = comparisonResult[ext]?.not_compared;
+
+            if (rows.length > 0) {
+                const columnsDisplay = Object.keys(rows[0])
+                    .filter(c => c !== "id" && c !== "set")
+                    .map(c => ({field: c, minWidth: 100, flex: 1}));
+                columns = [
+                    {field: "set", minWidth: 50, flex: 1},
+                ];
+                columns.push(...columnsDisplay);
+            }
+            break;
+
     }
 
 
@@ -90,6 +112,7 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
                     <Tabs value={selectedTabIndex} onChange={handleTabChange} aria-label="result tabs">
                         <Tab label="Differences" id="tab1"/>
                         <Tab label="Un seul set" id="tab2"/>
+                        <Tab label="Clés en double" id="tab2"/>
                     </Tabs>
                 </Box>
 

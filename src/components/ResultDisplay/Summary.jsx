@@ -12,14 +12,16 @@ function Summary({comparisonResult}) {
 
     return (
 
-        <TableContainer component={Paper} sx={{ maxWidth: 800}} centered>
+        <TableContainer component={Paper} sx={{ maxWidth: 1300}} centered>
             <Table sx={{ minWidth: 650}} aria-label="simple table">
                 <TableHead>
                     <TableRow>
                         <TableCell/>
-                        <TableCell align="right">Nb lignes différentes</TableCell>
-                        <TableCell align="right">Nb lignes seulement dans set 0</TableCell>
-                        <TableCell align="right">Nb lignes seulement dans set 1</TableCell>
+                        <TableCell align="center">Nb lignes différentes</TableCell>
+                        <TableCell align="center">Dans set 0 seulement</TableCell>
+                        <TableCell align="center">Dans set 1 seulement</TableCell>
+                        <TableCell align="center">Clés doublons dans set 0</TableCell>
+                        <TableCell align="center">Clés doublons dans set 1</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -34,9 +36,11 @@ function Summary({comparisonResult}) {
                                     <TableCell component="th" scope="row">
                                         {extension}
                                     </TableCell>
-                                    <TableCell align="right">{comparatorResult.summary.diffs}</TableCell>
-                                    <TableCell align="right">{comparatorResult.summary.in_one[0]}</TableCell>
-                                    <TableCell align="right">{comparatorResult.summary.in_one[1]}</TableCell>
+                                    <TableCell align="center">{comparatorResult.summary.diffs}</TableCell>
+                                    <TableCell align="center">{comparatorResult.summary.in_one[0]}</TableCell>
+                                    <TableCell align="center">{comparatorResult.summary.in_one[1]}</TableCell>
+                                    <TableCell align="center">{comparatorResult.summary.not_compared[0]}</TableCell>
+                                    <TableCell align="center">{comparatorResult.summary.not_compared[1]}</TableCell>
                                 </TableRow>
                             )
 

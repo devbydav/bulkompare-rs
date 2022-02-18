@@ -24,34 +24,41 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
         });
     };
 
-    let title, rows, columns
+    let title, noDiffMessage, rows, columns
     if (selectedTabIndex === 0) {
         title = "différences détectées dans les colonnes comparées";
+        noDiffMessage = "Aucune différence !";
+
         rows = comparisonResult[ext]?.differences;
 
-        const columnsDisplay = Object.keys(rows[0])
-            .filter(c => !(c.startsWith("_") || c === "id" ))
-            .map(c => ({field: c, minWidth: 100, flex: 1}));
-        columns = [
-            { field: "_rowkey", headerName: "Clé", minWidth: 180, flex: 1},
-            { field: "_col", headerName: "Colonne", minWidth: 150, flex: 1},
-            { field: "_from", headerName: "De", minWidth: 150, flex: 1},
-            { field: "_to", headerName: "A", minWidth: 150, flex: 1},
-        ];
-        columns.push(...columnsDisplay);
+        if (rows.length > 0) {
+            const columnsDisplay = Object.keys(rows[0])
+                .filter(c => !(c.startsWith("_") || c === "id" ))
+                .map(c => ({field: c, minWidth: 100, flex: 1}));
+            columns = [
+                { field: "_rowkey", headerName: "Clé", minWidth: 180, flex: 1},
+                { field: "_col", headerName: "Colonne", minWidth: 150, flex: 1},
+                { field: "_from", headerName: "De", minWidth: 150, flex: 1},
+                { field: "_to", headerName: "A", minWidth: 150, flex: 1},
+            ];
+            columns.push(...columnsDisplay);
+        }
 
     } else {
         title = "données dans un seul set de fichiers";
+        noDiffMessage = "Aucune donnée dans un seul set !"
 
         rows = comparisonResult[ext]?.in_one;
 
-        const columnsDisplay = Object.keys(rows[0])
-            .filter(c => c !== "id" && c !== "set")
-            .map(c => ({field: c, minWidth: 100, flex: 1}));
-        columns = [
-            { field: "set",  minWidth: 50, flex: 1},
-        ];
-        columns.push(...columnsDisplay)
+        if (rows.length > 0) {
+            const columnsDisplay = Object.keys(rows[0])
+                .filter(c => c !== "id" && c !== "set")
+                .map(c => ({field: c, minWidth: 100, flex: 1}));
+            columns = [
+                {field: "set", minWidth: 50, flex: 1},
+            ];
+            columns.push(...columnsDisplay);
+        }
     }
 
 
@@ -91,12 +98,17 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
                     justifyContent="center"
                     sx={{height: "calc(100% - 35px)", p: 1}}
                 >
-                    <ResultDataGrid
-                        rows={rows}
-                        columns={columns}
-                        selectionModel={selectionModels[selectedTabIndex]}
-                        updateSelectionModel={handleUpdateSelectionModel}
-                    />
+                    {rows.length > 0 ?
+                        <ResultDataGrid
+                            rows={rows}
+                            columns={columns}
+                            selectionModel={selectionModels[selectedTabIndex]}
+                            updateSelectionModel={handleUpdateSelectionModel}
+                        />
+                        :
+                        <p>{noDiffMessage}</p>
+                    }
+
                 </Box>
 
             </WorkSpace>

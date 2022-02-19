@@ -25,7 +25,7 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
 
         const initialColumns = comparator.available_cols.map(col => ({
                 name: col,
-                index: comparator.index_cols.includes(col),
+                key: comparator.key_cols.includes(col),
                 compare: comparator.compare_cols.includes(col),
                 display: comparator.display_cols.includes(col)
             })
@@ -42,11 +42,11 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
             const index = newCsvColumns.findIndex(val => val.name === colName);
             const newCsvColumn = {...newCsvColumns[index]};
             newCsvColumn[selectionType] = !newCsvColumn[selectionType]
-            if (selectionType === "index" && newCsvColumn[selectionType]) {
+            if (selectionType === "key" && newCsvColumn[selectionType]) {
                 newCsvColumn["compare"] = false;
             }
             if (selectionType === "compare" && newCsvColumn[selectionType]) {
-                newCsvColumn["index"] = false;
+                newCsvColumn["key"] = false;
             }
 
             newCsvColumns[index] = newCsvColumn
@@ -59,7 +59,7 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
         setCsvCols(prevState => {
             const newCsvColumns = [...prevState];
             const index = newCsvColumns.findIndex(val => val.name === colName);
-            newCsvColumns[index] = {name: colName, index: false, compare: false, display: false};
+            newCsvColumns[index] = {name: colName, key: false, compare: false, display: false};
             return newCsvColumns;
         })
 
@@ -92,8 +92,8 @@ function ColumnSelection({comparator, selectedExt, handleSave}) {
                                     <TableCell align="center">
                                         <ButtonGroup disableElevation color="primary">
                                             <Button
-                                                onClick={() => handleToggleSelection(csvCol.name, "index")}
-                                                {...(csvCol.index ? selected : notSelected)}
+                                                onClick={() => handleToggleSelection(csvCol.name, "key")}
+                                                {...(csvCol.key ? selected : notSelected)}
                                             >
                                                 Clé
                                             </Button>

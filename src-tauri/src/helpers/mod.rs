@@ -26,14 +26,14 @@ pub enum Comparison {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Line {
-    pub index: Vec<String>,
+    pub key: Vec<String>,
     pub compare: Vec<String>,
     pub display: Vec<String>,
     pub result: Comparison,
 }
 
 pub struct Columns<'a> {
-    pub index: &'a Vec<String>,
+    pub key: &'a Vec<String>,
     pub compare: &'a Vec<String>,
     pub display: &'a Vec<String>,
 }

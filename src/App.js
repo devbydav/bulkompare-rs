@@ -129,8 +129,8 @@ function App() {
      const handleColumnsSelectionSave = (csvCols) => {
         console.log("Saving column selection");
 
-        const indexCols = csvCols.reduce((filtered, csvCol) => {
-            if (csvCol.index) {
+        const keyCols = csvCols.reduce((filtered, csvCol) => {
+            if (csvCol.key) {
                 filtered.push(csvCol.name);
             }
             return filtered;
@@ -154,7 +154,7 @@ function App() {
          const newSelection = {...selection};
          const newComparator = {
              ...selectedComparator,
-             index_cols: indexCols,
+             key_cols: keyCols,
              compare_cols: compareCols,
              display_cols: displayCols,
          };

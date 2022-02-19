@@ -45,7 +45,7 @@ impl CsvSet {
     pub fn get_lines(&self, columns: &Columns, directory: &Path, ext: &str) -> Result<Vec<Line>> {
         let files = Files::new(directory, ext)?;
         let mut lines = self.read_csv(columns, files)?;
-        lines.sort_unstable_by(|a, b| a.index.cmp(&b.index));
+        lines.sort_unstable_by(|a, b| a.key.cmp(&b.key));
 
         if lines.is_empty() {
             println!("No line !");
@@ -53,7 +53,7 @@ impl CsvSet {
         }
 
         for i in 0..lines.len() - 1 {
-            if lines[i].index == lines[i + 1].index {
+            if lines[i].key == lines[i + 1].key {
                 // println!("EQUAL!");
                 lines[i].result = Comparison::DuplicatedIndex;
                 lines[i + 1].result = Comparison::DuplicatedIndex;
@@ -119,8 +119,8 @@ impl CsvSet {
                 .context("Ligne header absente")??;
 
             // Get the column indices in this file
-            let index_indices: Vec<usize> = cols
-                .index
+            let key_indices: Vec<usize> = cols
+                .key
                 .iter()
                 .map(|col| header.iter().position(|e| e == col).unwrap())
                 .collect();
@@ -137,14 +137,11 @@ impl CsvSet {
                 .map(|col| header.iter().position(|e| e == col).unwrap())
                 .collect();
 
-            // println!("Index selection: {:?}", cols.index);
-            // println!("Index indices  : {:?}", index_indices);
-
             for result in reader.records() {
                 let record = result?;
 
                 lines.push(Line {
-                    index: index_indices
+                    key: key_indices
                         .iter()
                         .map(|i| record.get(*i).unwrap_or("").to_string())
                         .collect(),

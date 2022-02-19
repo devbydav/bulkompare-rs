@@ -14,7 +14,7 @@ export const defaultCsvSet = {
 export const defaultComparator = {
     "status": Status.Initial,
     "available_cols": [],
-    "index_cols": [],
+    "key_cols": [],
     "compare_cols": [],
     "display_cols": [],
     "csv_sets": [defaultCsvSet, defaultCsvSet]

@@ -43,7 +43,7 @@ pub struct Comparator {
     #[serde(skip_serializing_if = "skip_status_serialization")]
     pub status: Status,
     pub available_cols: Vec<String>,
-    pub index_cols: Vec<String>,
+    pub key_cols: Vec<String>,
     pub compare_cols: Vec<String>,
     pub display_cols: Vec<String>,
     pub csv_sets: Vec<CsvSet>,
@@ -149,7 +149,7 @@ impl Comparator {
         );
 
         // Clear invalid selected columns
-        self.index_cols = self.clear_unavailable_cols(&self.index_cols);
+        self.key_cols = self.clear_unavailable_cols(&self.key_cols);
         self.compare_cols = self.clear_unavailable_cols(&self.compare_cols);
         self.display_cols = self.clear_unavailable_cols(&self.display_cols);
 
@@ -173,8 +173,8 @@ impl Comparator {
     fn check_selected_columns(&mut self) -> Result<()> {
         // Check that some columns are selected
         ensure!(
-            !self.index_cols.is_empty(),
-            "Aucune colonne d'index sélectionnée"
+            !self.key_cols.is_empty(),
+            "Aucune colonne clé sélectionnée"
         );
         ensure!(
             !self.compare_cols.is_empty(),
@@ -185,13 +185,13 @@ impl Comparator {
             "Aucune colonne à afficher sélectionnée"
         );
 
-        // It doesn't make sense to compare columns selected for index
+        // It doesn't make sense to compare columns selected for key
         ensure!(
             !self
-                .index_cols
+                .key_cols
                 .iter()
-                .any(|index_col| self.compare_cols.contains(index_col)),
-            "Certaines colonnes sont sélectionnées en index et comparaison"
+                .any(|key_col| self.compare_cols.contains(key_col)),
+            "Certaines colonnes sont sélectionnées en clé et comparaison"
         );
 
         Ok(())
@@ -202,7 +202,7 @@ impl Comparator {
         let mut differences = Vec::new();
 
         let columns = Columns {
-            index: &self.index_cols,
+            key: &self.key_cols,
             compare: &self.compare_cols,
             display: &self.display_cols,
         };
@@ -223,9 +223,9 @@ impl Comparator {
         let mut line_right = iter_right.next().context("Dataset droit vide")?;
 
         loop {
-            match line_left.index.cmp(&line_right.index) {
+            match line_left.key.cmp(&line_right.key) {
                 Ordering::Equal => {
-                    // Found unique index match (duplicated are skipped) -> compare
+                    // Found unique key match (duplicated are skipped) -> compare
                     if check_values_are_identical(&columns, line_left, line_right, &mut differences)
                     {
                         line_left.result = Comparison::Identical;
@@ -333,7 +333,7 @@ fn check_values_are_identical(
 
             differences.push(Difference {
                 id: differences.len(),
-                _rowkey: left.index.join("-"),
+                _rowkey: left.key.join("-"),
                 _col: columns.compare[i].clone(),
                 _from: left_val.clone(),
                 _to: right_val.clone(),

@@ -8,39 +8,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use anyhow::Context;
-use serde::Serialize;
 
-use comparator::{Comparator, ComparatorResult};
-use helpers::Status;
-use selection::Selection;
-
-mod comparator;
-mod csv_set;
-mod helpers;
-mod selection;
-
-#[derive(Serialize)]
-struct StringError(Option<String>);
-
-impl From<anyhow::Error> for StringError {
-    fn from(e: anyhow::Error) -> Self {
-        StringError(Some(format!("Erreur: {:#}", e)))
-    }
-}
-
-impl StringError {
-    fn none() -> Self {
-        StringError(None)
-    }
-
-    fn add_error(&mut self, error: anyhow::Error, extension: &str) {
-        // Add to list of errors
-        self.0 = match &mut self.0 {
-            None => Some(format!("[{}] {:#}", extension, error)),
-            Some(prev) => Some(format!("{} / [{}] {:#}", prev, extension, error)),
-        }
-    }
-}
+use app::{Comparator, ComparatorResult, Selection, Status, StringError};
 
 fn main() {
     tauri::Builder::default()

@@ -252,11 +252,19 @@ function App() {
                         comparisonResult ?
                             <Route path="results" >
                                 <Route path="summary" element={
-                                    <SummaryDisplay comparisonResult={comparisonResult}  showToast={showToast} />
+                                    <SummaryDisplay
+                                        comparisonResult={comparisonResult}
+                                        setSelectedExt={setSelectedExt}
+                                        showToast={showToast}
+                                    />
                                 }/>
 
-                                <Route path="*" element={
-                                    <ByExtResultDisplay comparisonResult={comparisonResult} ext={selectedExt} showToast={showToast}/>
+                                <Route path=":resultType" element={
+                                    <ByExtResultDisplay
+                                        comparisonResult={comparisonResult}
+                                        ext={selectedExt}
+                                        showToast={showToast}
+                                    />
                                 }/>
                             </Route>
                             :

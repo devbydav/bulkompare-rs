@@ -7,7 +7,7 @@ import TopBar from "../TopBar";
 import WorkSpace from "../WorkSpace";
 
 
-function SummaryDisplay({comparisonResult, showToast}) {
+function SummaryDisplay({comparisonResult, setSelectedExt, showToast}) {
 
     console.log("-> Rendering SummaryDisplay");
 
@@ -21,7 +21,7 @@ function SummaryDisplay({comparisonResult, showToast}) {
                     justifyContent="center"
                     sx={{p: 1}}
                 >
-                    <Summary comparisonResult={comparisonResult}/>
+                    <Summary comparisonResult={comparisonResult} setSelectedExt={setSelectedExt}/>
                 </Box>
             </WorkSpace>
 

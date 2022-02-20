@@ -6,6 +6,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import {useNavigate} from "react-router-dom";
+import {Button} from "@mui/material";
 
 const sxOk = {
     color: "#2c7039"
@@ -14,7 +16,12 @@ const sxPb = {
     color: "#bd2025"
 }
 
-function Summary({comparisonResult}) {
+function Summary({comparisonResult, setSelectedExt}) {
+    const navigate = useNavigate();
+    const handleExtensionClick = (ext, resultType) => {
+        setSelectedExt(ext);
+        navigate("/results/" + resultType);
+    }
 
     return (
 
@@ -46,11 +53,51 @@ function Summary({comparisonResult}) {
                                     <TableCell component="th" scope="row">
                                         {extension}
                                     </TableCell>
-                                    <TableCell align="center" sx={diffs > 0 ? sxPb : sxOk}>{diffs}</TableCell>
-                                    <TableCell align="center" sx={inOne0 > 0 ? sxPb : sxOk}>{inOne0}</TableCell>
-                                    <TableCell align="center" sx={inOne1 > 0 ? sxPb : sxOk}>{inOne1}</TableCell>
-                                    <TableCell align="center" sx={notCompared0 > 0 ? sxPb : sxOk}>{notCompared0}</TableCell>
-                                    <TableCell align="center" sx={notCompared1 > 0 ? sxPb : sxOk}>{notCompared1}</TableCell>
+
+                                    <TableCell align="center">
+                                        <Button
+                                            sx={diffs > 0 ? sxPb : sxOk}
+                                            onClick={() => handleExtensionClick(extension, "diffs")}
+                                        >
+                                            {diffs}
+                                        </Button>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        <Button
+                                            sx={inOne0 > 0 ? sxPb : sxOk}
+                                            onClick={() => handleExtensionClick(extension, "inOne")}
+                                        >
+                                            {inOne0}
+                                        </Button>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        <Button
+                                            sx={inOne1 > 0 ? sxPb : sxOk}
+                                            onClick={() => handleExtensionClick(extension, "inOne")}
+                                        >
+                                            {inOne1}
+                                        </Button>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        <Button
+                                            sx={notCompared0 > 0 ? sxPb : sxOk}
+                                            onClick={() => handleExtensionClick(extension, "notCompared")}
+                                        >
+                                            {notCompared0}
+                                        </Button>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        <Button
+                                            sx={notCompared1 > 0 ? sxPb : sxOk}
+                                            onClick={() => handleExtensionClick(extension, "notCompared")}
+                                        >
+                                            {notCompared1}
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             )
 

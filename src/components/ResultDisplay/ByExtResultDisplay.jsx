@@ -1,9 +1,10 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Box, Tabs, Tab} from "@mui/material";
 import TopBar from "../TopBar";
 import WorkSpace from "../WorkSpace";
 import {invoke} from "@tauri-apps/api";
 import ResultDataGrid from "./ResultDataGrid";
+import {useParams} from "react-router-dom";
 
 
 function ByExtResultDisplay({comparisonResult, ext, showToast}) {
@@ -11,6 +12,21 @@ function ByExtResultDisplay({comparisonResult, ext, showToast}) {
 
     const [selectedTabIndex, setselectedTabIndex] = useState(0);
     const [selectionModels, setSelectionModels] = useState([[],[]]);
+
+     let params = useParams();
+     
+     useEffect(() => {
+         switch (params.resultType) {
+             case "inOne":
+                 setselectedTabIndex(1);
+                 break;
+             case "notCompared":
+                 setselectedTabIndex(2);
+                 break;
+             default:
+                 setselectedTabIndex(0);
+         }
+     }, [params])
 
     const handleTabChange = (event, newIndex) => {
         setselectedTabIndex(newIndex);

@@ -7,6 +7,12 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
+const sxOk = {
+    color: "#2c7039"
+}
+const sxPb = {
+    color: "#bd2025"
+}
 
 function Summary({comparisonResult}) {
 
@@ -27,7 +33,11 @@ function Summary({comparisonResult}) {
                 <TableBody>
                     {
                         Object.entries(comparisonResult).map(([extension, comparatorResult]) => {
-                            console.log(extension);
+                            const diffs = comparatorResult.summary.diffs;
+                            const inOne0 = comparatorResult.summary.in_one[0];
+                            const inOne1 = comparatorResult.summary.in_one[1];
+                            const notCompared0 = comparatorResult.summary.not_compared[0];
+                            const notCompared1 = comparatorResult.summary.not_compared[1];
                             return (
                                 <TableRow
                                     key={extension}
@@ -36,11 +46,11 @@ function Summary({comparisonResult}) {
                                     <TableCell component="th" scope="row">
                                         {extension}
                                     </TableCell>
-                                    <TableCell align="center">{comparatorResult.summary.diffs}</TableCell>
-                                    <TableCell align="center">{comparatorResult.summary.in_one[0]}</TableCell>
-                                    <TableCell align="center">{comparatorResult.summary.in_one[1]}</TableCell>
-                                    <TableCell align="center">{comparatorResult.summary.not_compared[0]}</TableCell>
-                                    <TableCell align="center">{comparatorResult.summary.not_compared[1]}</TableCell>
+                                    <TableCell align="center" sx={diffs > 0 ? sxPb : sxOk}>{diffs}</TableCell>
+                                    <TableCell align="center" sx={inOne0 > 0 ? sxPb : sxOk}>{inOne0}</TableCell>
+                                    <TableCell align="center" sx={inOne1 > 0 ? sxPb : sxOk}>{inOne1}</TableCell>
+                                    <TableCell align="center" sx={notCompared0 > 0 ? sxPb : sxOk}>{notCompared0}</TableCell>
+                                    <TableCell align="center" sx={notCompared1 > 0 ? sxPb : sxOk}>{notCompared1}</TableCell>
                                 </TableRow>
                             )
 

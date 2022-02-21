@@ -389,5 +389,64 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {}
+    fn test_comparison() {
+        let dirs = [PathBuf::from("tests/data/a"), PathBuf::from("tests/data/b")];
+
+        let mut comparator = Comparator {
+            ext: "tsv".to_string(),
+            status: Status::Initial,
+            available_cols: vec![],
+            key_cols: vec!["Date".to_string(), "Time".to_string(), "Name".to_string()],
+            compare_cols: vec!["Col1".to_string(), "Col2".to_string(), "Col3".to_string()],
+            display_cols: vec!["Name".to_string(), "Col2".to_string()],
+            csv_sets: vec![
+                CsvSet {
+                    encoding: "utf8".to_string(),
+                    comment: "#".to_string(),
+                    skip_blank_lines: false,
+                    header: 0,
+                    separator: "\t".to_string(),
+                    strip: false,
+                    ignore_whitespace: false,
+                },
+                CsvSet {
+                    encoding: "utf8".to_string(),
+                    comment: "#".to_string(),
+                    skip_blank_lines: false,
+                    header: 0,
+                    separator: "\t".to_string(),
+                    strip: false,
+                    ignore_whitespace: false,
+                },
+            ],
+            lines_left: vec![],
+            lines_right: vec![],
+        };
+
+        comparator
+            .update_status(Status::Initial, Status::Initial, &dirs)
+            .unwrap();
+
+        let res = comparator.compare(&dirs).unwrap();
+
+        // Check summary
+        assert_eq!(res.summary.diffs, 1); // 1 difference
+        assert_eq!(res.summary.in_one, vec![1, 0]); // 1 line in set 0 only
+        assert_eq!(res.summary.not_compared, vec![2, 2]); // 2 duplicate keys in sets 0 and 1
+
+        // Check differences
+        assert_eq!(res.differences[0]._from, "hello");
+        assert_eq!(res.differences[0]._to, "helo");
+        assert_eq!(res.differences[0]._rowkey, "01/01/2021-18:20:00-Jane");
+
+        // Check in one
+        assert_eq!(res.in_one.len(), 1);
+        assert_eq!(res.in_one[0].get("Name").unwrap(), "Bob");
+
+        // Check not compared
+        assert_eq!(res.not_compared.len(), 4);
+        for i in 0..4 {
+            assert_eq!(res.not_compared[i].get("Name").unwrap(), "Duplicate");
+        }
+    }
 }

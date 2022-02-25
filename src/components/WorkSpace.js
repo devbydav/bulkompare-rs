@@ -1,7 +1,5 @@
 import {Box} from '@mui/material';
-
-const drawerWidth = 240;
-const topbarHeight = 60;
+import {drawerWidth, topbarHeight} from "../constants/constants";
 
 function WorkSpace(props) {
 

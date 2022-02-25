@@ -16,8 +16,7 @@ import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ConfigControl from "./ConfigControl";
 import ResultControl from "./ResultControl";
-
-const drawerWidth = 240;
+import {drawerWidth} from "../../constants/constants"
 
 const LeftDrawer = ({selection, setSelection, comparator, selectedExt, setSelectedExt, comparisonResult, handleCompare, showToast}) => {
 

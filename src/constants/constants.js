@@ -4,3 +4,6 @@ export const Status = Object.freeze({
     ColsAvailable: 2,
     Ready: 3,
 });
+
+export const drawerWidth = 240;
+export const topbarHeight = 60;

@@ -4,8 +4,7 @@ import {
     Toolbar,
     Typography
 } from '@mui/material';
-
-const drawerWidth = 240;
+import {drawerWidth} from "../constants/constants";
 
 function TopBar({title, btnAction, btnText}) {
 
